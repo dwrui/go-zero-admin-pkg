@@ -1,0 +1,108 @@
+// 包 gutil 提供了一些实用函数。
+package gutil
+
+import (
+	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gconv"
+	"reflect"
+)
+
+const (
+	dumpIndent = `    `
+)
+
+// Keys从给定的映射或结构体中检索并返回键。
+func Keys(mapOrStruct any) (keysOrAttrs []string) {
+	keysOrAttrs = make([]string, 0)
+	if m, ok := mapOrStruct.(map[string]any); ok {
+		for k := range m {
+			keysOrAttrs = append(keysOrAttrs, k)
+		}
+		return
+	}
+	var (
+		reflectValue reflect.Value
+		reflectKind  reflect.Kind
+	)
+	if v, ok := mapOrStruct.(reflect.Value); ok {
+		reflectValue = v
+	} else {
+		reflectValue = reflect.ValueOf(mapOrStruct)
+	}
+	reflectKind = reflectValue.Kind()
+	for reflectKind == reflect.Ptr {
+		if !reflectValue.IsValid() || reflectValue.IsNil() {
+			reflectValue = reflect.New(reflectValue.Type().Elem()).Elem()
+			reflectKind = reflectValue.Kind()
+		} else {
+			reflectValue = reflectValue.Elem()
+			reflectKind = reflectValue.Kind()
+		}
+	}
+	switch reflectKind {
+	case reflect.Map:
+		for _, k := range reflectValue.MapKeys() {
+			keysOrAttrs = append(keysOrAttrs, gconv.String(k.Interface()))
+		}
+	case reflect.Struct:
+		var (
+			fieldType   reflect.StructField
+			reflectType = reflectValue.Type()
+		)
+		for i := 0; i < reflectValue.NumField(); i++ {
+			fieldType = reflectType.Field(i)
+			if fieldType.Anonymous {
+				keysOrAttrs = append(keysOrAttrs, Keys(reflectValue.Field(i))...)
+			} else {
+				keysOrAttrs = append(keysOrAttrs, fieldType.Name)
+			}
+		}
+	default:
+	}
+	return
+}
+
+// Values 从给定的映射或结构体中检索并返回其值。
+func Values(mapOrStruct interface{}) (values []interface{}) {
+	values = make([]interface{}, 0)
+	if m, ok := mapOrStruct.(map[string]interface{}); ok {
+		for _, v := range m {
+			values = append(values, v)
+		}
+		return
+	}
+	var (
+		reflectValue reflect.Value
+		reflectKind  reflect.Kind
+	)
+	if v, ok := mapOrStruct.(reflect.Value); ok {
+		reflectValue = v
+	} else {
+		reflectValue = reflect.ValueOf(mapOrStruct)
+	}
+	reflectKind = reflectValue.Kind()
+	for reflectKind == reflect.Ptr {
+		reflectValue = reflectValue.Elem()
+		reflectKind = reflectValue.Kind()
+	}
+	switch reflectKind {
+	case reflect.Map:
+		for _, k := range reflectValue.MapKeys() {
+			values = append(values, reflectValue.MapIndex(k).Interface())
+		}
+	case reflect.Struct:
+		var (
+			fieldType   reflect.StructField
+			reflectType = reflectValue.Type()
+		)
+		for i := 0; i < reflectValue.NumField(); i++ {
+			fieldType = reflectType.Field(i)
+			if fieldType.Anonymous {
+				values = append(values, Values(reflectValue.Field(i))...)
+			} else {
+				values = append(values, reflectValue.Field(i).Interface())
+			}
+		}
+	default:
+	}
+	return
+}

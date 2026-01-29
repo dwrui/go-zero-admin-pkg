@@ -9,12 +9,21 @@ const defaultMultipartMemory = 32 << 20 // 32 MB
 // 返回信息主体
 type (
 	R struct {
+<<<<<<< HEAD
 		Code    int
 		Message string
 		Data    interface{}
 		Exdata  interface{}
 		Token   string
 		Time    int64
+=======
+		Code    int         `json:"code"`
+		Message string      `json:"message"`
+		Data    interface{} `json:"data"`
+		Exdata  interface{} `json:"exdata"`
+		Token   string      `json:"token"`
+		Time    int64       `json:"time"`
+>>>>>>> 57bcf99 (更新)
 	}
 )
 
