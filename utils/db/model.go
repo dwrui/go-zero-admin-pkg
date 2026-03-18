@@ -32,14 +32,18 @@ type Model struct {
 	lockMode      string
 	distinct      bool
 	fields        []string
-	sqlFetch      bool                   // 是否只输出SQL不执行查询
-	data          interface{}            // 数据操作字段
-	withTrashed   bool                   // 是否包含软删除数据
-	updateData    map[string]interface{} // 更新数据
-	incData       map[string]interface{} // 自增数据
-	decData       map[string]interface{} // 自减数据
-	hasDeleteTime *bool                  // 缓存表是否有delete_time字段（nil表示未检测）
-	primaryKey    string                 // 缓存表的主键
+	sqlFetch      bool
+	data          interface{}
+	withTrashed   bool
+	updateData    map[string]interface{}
+	incData       map[string]interface{}
+	decData       map[string]interface{}
+	hasDeleteTime *bool
+	primaryKey    string
+	cacheEnabled  bool
+	cacheTTL      time.Duration
+	cachePrefix   string
+	skipCache     bool
 }
 
 // convertToMap 将任意类型转换为map[string]interface{}
