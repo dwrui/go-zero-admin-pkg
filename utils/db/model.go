@@ -627,6 +627,9 @@ func (qb *Model) WhereIn(field string, values interface{}) *Model {
 	}
 
 	operator := "AND"
+	if len(qb.where) == 0 {
+		operator = ""
+	}
 	qb.where = append(qb.where, whereClause{
 		operator: operator,
 		field:    field,
@@ -863,7 +866,6 @@ func (qb *Model) Paginate(ctx context.Context, page, pageSize int, dest interfac
 	copy(originalFields, qb.fields)
 
 	countResult := qb.Count(ctx)
-
 	// 恢复原始字段设置
 	qb.fields = originalFields
 

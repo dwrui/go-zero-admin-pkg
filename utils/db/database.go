@@ -3,8 +3,9 @@ package db
 import (
 	"context"
 	"database/sql"
-	"github.com/zeromicro/go-zero/core/stores/sqlx"
 	"strings"
+
+	"github.com/zeromicro/go-zero/core/stores/sqlx"
 )
 
 // DBManager 数据库管理器
@@ -88,4 +89,13 @@ func (db *DBManager) QueryRows(ctx context.Context, v interface{}, query string,
 // QueryRow 查询单条记录
 func (db *DBManager) QueryRow(ctx context.Context, v interface{}, query string, args ...interface{}) error {
 	return db.conn.QueryRowPartialCtx(ctx, v, query, args...)
+}
+
+// QueryRaw 执行原始查询返回*sql.Rows（用于动态表查询）
+func (db *DBManager) QueryRaw(ctx context.Context, query string, args ...interface{}) (*sql.Rows, error) {
+	rawDB, err := db.conn.RawDB()
+	if err != nil {
+		return nil, err
+	}
+	return rawDB.QueryContext(ctx, query, args...)
 }
