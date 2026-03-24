@@ -1,8 +1,8 @@
 package converter
 
 import (
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gtime"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/json"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gtime"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/json"
 	"reflect"
 	"time"
 )

@@ -1,6 +1,6 @@
 package gjson
 
-import "github.com/dwrui/go-zero-admin/pkg/utils/tools/gfile"
+import "github.com/dwrui/go-zero-admin-pkg/utils/tools/gfile"
 
 // Load loads content from specified file `path`, and creates a Json object from its content.
 // Deprecated: use LoadPath instead.

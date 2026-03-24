@@ -2,12 +2,12 @@ package converter
 
 import (
 	"fmt"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/empty"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gcode"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gconv/internal/localinterface"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gerror"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gtime"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/json"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/empty"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gcode"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gconv/internal/localinterface"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gerror"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gtime"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/json"
 	"reflect"
 	"strconv"
 	"time"

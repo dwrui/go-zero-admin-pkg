@@ -2,10 +2,10 @@ package gjson
 
 import (
 	"fmt"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gcode"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gerror"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gutil"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gvar"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gcode"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gerror"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gutil"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gvar"
 )
 
 // Interface returns the json value.

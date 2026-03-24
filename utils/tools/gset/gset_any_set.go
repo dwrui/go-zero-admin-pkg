@@ -3,10 +3,10 @@ package gset
 
 import (
 	"bytes"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gconv"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gstr"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/json"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/rwmutex"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gconv"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gstr"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/json"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/rwmutex"
 )
 
 // Set 是一个由 interface{} 项组成的集合。

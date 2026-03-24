@@ -1,7 +1,7 @@
 // Package localinterface defines some interfaces for converting usage.
 package localinterface
 
-import "github.com/dwrui/go-zero-admin/pkg/utils/tools/gtime"
+import "github.com/dwrui/go-zero-admin-pkg/utils/tools/gtime"
 
 // IVal is used for type assert api for Val().
 type IVal interface {

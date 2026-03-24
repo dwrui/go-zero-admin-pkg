@@ -2,7 +2,7 @@ package gtimer
 
 import (
 	"container/heap"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gtype"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gtype"
 	"math"
 	"sync"
 )

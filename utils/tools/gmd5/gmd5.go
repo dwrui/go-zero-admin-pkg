@@ -5,8 +5,8 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"fmt"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gconv"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gerror"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gconv"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gerror"
 	"io"
 	"os"
 )

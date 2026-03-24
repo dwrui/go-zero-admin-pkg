@@ -1,6 +1,6 @@
 package converter
 
-import "github.com/dwrui/go-zero-admin/pkg/utils/tools/json"
+import "github.com/dwrui/go-zero-admin-pkg/utils/tools/json"
 
 // SliceMapOption is the option for SliceMap function.
 type SliceMapOption struct {

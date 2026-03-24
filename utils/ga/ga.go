@@ -2,7 +2,7 @@ package ga
 
 import (
 	"context"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gvar"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gvar"
 )
 
 type (

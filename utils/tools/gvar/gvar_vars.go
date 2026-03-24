@@ -1,7 +1,7 @@
 package gvar
 
 import (
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gconv"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gconv"
 )
 
 // Vars is a slice of *Var.

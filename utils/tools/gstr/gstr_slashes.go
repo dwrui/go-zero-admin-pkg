@@ -2,7 +2,7 @@ package gstr
 
 import (
 	"bytes"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/utils"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/utils"
 )
 
 // AddSlashes quotes with slashes `\` for chars: '"\.

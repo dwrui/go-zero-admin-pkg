@@ -2,9 +2,9 @@ package gjson
 
 import (
 	"bytes"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gconv"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gerror"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/json"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gconv"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gerror"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/json"
 )
 
 // Valid checks whether `data` is a valid JSON data type.

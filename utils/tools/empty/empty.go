@@ -2,7 +2,7 @@
 package empty
 
 import (
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/reflection"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/reflection"
 	"reflect"
 	"time"
 )

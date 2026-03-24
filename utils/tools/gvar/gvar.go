@@ -2,8 +2,8 @@
 package gvar
 
 import (
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gtype"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/json"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gtype"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/json"
 )
 
 // Var is an universal variable type implementer.

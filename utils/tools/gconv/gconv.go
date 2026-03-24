@@ -4,12 +4,13 @@
 package gconv
 
 import (
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gconv/internal/converter"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gconv/internal/localinterface"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gconv/internal/structcache"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gtime"
 	"reflect"
 	"time"
+
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gconv/internal/converter"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gconv/internal/localinterface"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gconv/internal/structcache"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gtime"
 )
 
 // Converter is the manager for type converting.

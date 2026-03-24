@@ -1,9 +1,9 @@
 package gjson
 
 import (
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gconv"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/reflection"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/rwmutex"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gconv"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/reflection"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/rwmutex"
 	"reflect"
 )
 

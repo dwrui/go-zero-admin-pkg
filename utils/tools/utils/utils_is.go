@@ -1,7 +1,7 @@
 package utils
 
 import (
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/empty"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/empty"
 	"reflect"
 )
 

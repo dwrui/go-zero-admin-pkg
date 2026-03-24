@@ -1,7 +1,7 @@
 package gtag
 
 import (
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/json"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/json"
 )
 
 // Type name => enums json.

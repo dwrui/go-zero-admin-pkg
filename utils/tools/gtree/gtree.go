@@ -3,7 +3,7 @@
 // Some implements are from: https://github.com/emirpasic/gods
 package gtree
 
-import "github.com/dwrui/go-zero-admin/pkg/utils/tools/gvar"
+import "github.com/dwrui/go-zero-admin-pkg/utils/tools/gvar"
 
 // iTree defines the interface for basic operations of a tree.
 type iTree interface {

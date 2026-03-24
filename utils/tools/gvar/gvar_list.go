@@ -1,7 +1,7 @@
 package gvar
 
 import (
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gutil"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gutil"
 )
 
 // ListItemValues retrieves and returns the elements of all item struct/map with key `key`.

@@ -2,7 +2,7 @@ package gtime
 
 import (
 	"bytes"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gregex"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gregex"
 	"regexp"
 	"strconv"
 	"strings"

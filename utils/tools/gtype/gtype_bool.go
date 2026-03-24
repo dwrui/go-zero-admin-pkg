@@ -2,7 +2,7 @@ package gtype
 
 import (
 	"bytes"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gconv"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gconv"
 	"sync/atomic"
 )
 

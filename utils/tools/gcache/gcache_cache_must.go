@@ -2,7 +2,7 @@ package gcache
 
 import (
 	"context"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gvar"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gvar"
 	"time"
 )
 

@@ -1,7 +1,7 @@
 package gvar
 
 import (
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/utils"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/utils"
 )
 
 // IsNil checks whether `v` is nil.

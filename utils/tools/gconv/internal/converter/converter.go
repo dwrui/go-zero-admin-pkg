@@ -2,10 +2,10 @@
 package converter
 
 import (
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gcode"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gconv/internal/structcache"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gerror"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gtime"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gcode"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gconv/internal/structcache"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gerror"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gtime"
 	"reflect"
 	"time"
 )

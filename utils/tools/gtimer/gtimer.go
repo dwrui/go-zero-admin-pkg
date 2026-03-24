@@ -14,10 +14,10 @@ package gtimer
 
 import (
 	"context"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/command"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gcode"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gerror"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gtype"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/command"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gcode"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gerror"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gtype"
 	"strconv"
 	"sync"
 	"time"

@@ -2,7 +2,7 @@ package gerror
 
 import (
 	"fmt"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gcode"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gcode"
 )
 
 // New 创建并返回一个从给定文本格式化的错误。

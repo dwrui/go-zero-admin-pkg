@@ -2,7 +2,7 @@ package gcache
 
 import (
 	"context"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gconv"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gconv"
 )
 
 // Cache struct.

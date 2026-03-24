@@ -4,24 +4,19 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-<<<<<<< HEAD
 	"reflect"
 	"strconv"
 	"strings"
 	"time"
 
-	"github.com/dwrui/go-zero-admin/pkg/utils/ga"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gconv"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gmap"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gvar"
-=======
-	"strings"
->>>>>>> fix-module-path
+	"github.com/dwrui/go-zero-admin-pkg/utils/ga"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gconv"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gmap"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gvar"
 )
 
 // Model 链式查询构建器
 type Model struct {
-<<<<<<< HEAD
 	db            *DBManager
 	table         string
 	alias         string
@@ -113,24 +108,6 @@ func (qb *Model) convertToMaps(data interface{}) ([]map[string]interface{}, erro
 		}
 		return result, nil
 	}
-=======
-	db       *DBManager
-	table    string
-	alias    string
-	joins    []joinClause
-	where    []whereClause
-	groupBy  []string
-	having   []whereClause
-	orderBy  []orderClause
-	limit    int
-	offset   int
-	page     int
-	pageSize int
-	lockMode string
-	distinct bool
-	fields   []string
-	sqlFetch bool // 是否只输出SQL不执行查询
->>>>>>> fix-module-path
 }
 
 // joinClause 关联查询结构
@@ -158,7 +135,6 @@ type orderClause struct {
 
 // QueryResult 查询结果包装器
 type QueryResult struct {
-<<<<<<< HEAD
 	data   interface{}
 	err    error
 	query  string
@@ -171,12 +147,6 @@ type PaginateResult struct {
 	Size  int
 	Total int64
 	Error error
-=======
-	data  interface{}
-	err   error
-	query string
-	args  []interface{}
->>>>>>> fix-module-path
 }
 
 // IsEmpty 判断查询结果是否为空
@@ -190,7 +160,6 @@ func (r *QueryResult) IsEmpty() bool {
 		return len(v) == 0
 	case nil:
 		return true
-<<<<<<< HEAD
 	case string:
 		return v == ""
 	case int, int8, int16, int32, int64:
@@ -199,8 +168,6 @@ func (r *QueryResult) IsEmpty() bool {
 		return v == 0
 	case float32, float64:
 		return v == 0
-=======
->>>>>>> fix-module-path
 	default:
 		// 使用反射检查是否为空切片
 		return r.isSliceEmpty(v)
@@ -227,7 +194,6 @@ func (r *QueryResult) GetArgs() []interface{} {
 	return r.args
 }
 
-<<<<<<< HEAD
 // GetData 获取查询结果数据
 func (r *QueryResult) GetData() interface{} {
 	return r.data
@@ -238,8 +204,6 @@ func (r *QueryResult) GetLastId() string {
 	return r.lastId
 }
 
-=======
->>>>>>> fix-module-path
 // SQLFetch 设置是否只输出SQL不执行查询
 func (qb *Model) SQLFetch(fetch bool) *Model {
 	qb.sqlFetch = fetch
@@ -316,15 +280,10 @@ func (qb *Model) Join(table, alias, on string, args ...interface{}) *Model {
 }
 
 // Where 设置条件 (支持map和map切片)
-<<<<<<< HEAD
-// Where 设置条件 (支持map和map切片)
-=======
->>>>>>> fix-module-path
 func (qb *Model) Where(conditions interface{}, args ...interface{}) *Model {
 	switch cond := conditions.(type) {
 	case map[string]interface{}:
 		// 处理map类型条件
-<<<<<<< HEAD
 		i := 0
 		for conditionStr, value := range cond {
 			operator := "AND"
@@ -486,29 +445,16 @@ func (qb *Model) Where(conditions interface{}, args ...interface{}) *Model {
 					args:     getConditionArgs(value),
 				})
 			}
-=======
-		for field, value := range cond {
-			qb.where = append(qb.where, whereClause{
-				operator: "AND",
-				field:    field,
-				cond:     "= ?",
-				args:     []interface{}{value},
-			})
->>>>>>> fix-module-path
 		}
 	case []map[string]interface{}:
 		// 处理map切片类型条件
 		for i, condition := range cond {
-<<<<<<< HEAD
+
 			for conditionStr, value := range condition {
-=======
-			for field, value := range condition {
->>>>>>> fix-module-path
 				operator := "AND"
 				if i == 0 && len(qb.where) == 0 {
 					operator = "" // 第一个条件不加AND
 				}
-<<<<<<< HEAD
 
 				// 检查是否包含 IN 关键字
 				lowerCond := strings.ToLower(conditionStr)
@@ -573,14 +519,6 @@ func (qb *Model) Where(conditions interface{}, args ...interface{}) *Model {
 						args:     []interface{}{value},
 					})
 				}
-=======
-				qb.where = append(qb.where, whereClause{
-					operator: operator,
-					field:    field,
-					cond:     "= ?",
-					args:     []interface{}{value},
-				})
->>>>>>> fix-module-path
 			}
 		}
 	case string:
@@ -589,7 +527,6 @@ func (qb *Model) Where(conditions interface{}, args ...interface{}) *Model {
 		if len(qb.where) == 0 {
 			operator = ""
 		}
-<<<<<<< HEAD
 		// 检查是否包含 IN 关键字
 		lowerCond := strings.ToLower(cond)
 		if strings.Contains(lowerCond, "in(?)") && len(args) > 0 {
@@ -657,14 +594,6 @@ func (qb *Model) Where(conditions interface{}, args ...interface{}) *Model {
 				args:     args,
 			})
 		}
-=======
-		qb.where = append(qb.where, whereClause{
-			operator: operator,
-			field:    cond,
-			cond:     cond,
-			args:     args,
-		})
->>>>>>> fix-module-path
 	}
 	return qb
 }
@@ -685,7 +614,6 @@ func (qb *Model) WhereOr(field string, args ...interface{}) *Model {
 }
 
 // WhereIn 设置IN条件
-<<<<<<< HEAD
 func (qb *Model) WhereIn(field string, values interface{}) *Model {
 	// 将任意类型的切片转换为[]interface{}
 	interfaceValues := convertToInterfaceSlice(values)
@@ -695,15 +623,6 @@ func (qb *Model) WhereIn(field string, values interface{}) *Model {
 
 	placeholders := make([]string, len(interfaceValues))
 	for i := range interfaceValues {
-=======
-func (qb *Model) WhereIn(field string, values []interface{}) *Model {
-	if len(values) == 0 {
-		return qb
-	}
-
-	placeholders := make([]string, len(values))
-	for i := range values {
->>>>>>> fix-module-path
 		placeholders[i] = "?"
 	}
 
@@ -711,19 +630,11 @@ func (qb *Model) WhereIn(field string, values []interface{}) *Model {
 	if len(qb.where) == 0 {
 		operator = ""
 	}
-<<<<<<< HEAD
-=======
-
->>>>>>> fix-module-path
 	qb.where = append(qb.where, whereClause{
 		operator: operator,
 		field:    field,
 		cond:     fmt.Sprintf("IN (%s)", strings.Join(placeholders, ",")),
-<<<<<<< HEAD
 		args:     interfaceValues,
-=======
-		args:     values,
->>>>>>> fix-module-path
 	})
 	return qb
 }
@@ -872,7 +783,6 @@ func (qb *Model) LockInShareMode() *Model {
 	return qb
 }
 
-<<<<<<< HEAD
 // Find 查询单条记录
 func (qb *Model) Find(ctx context.Context, dest interface{}) *QueryResult {
 	qb.Limit(1)
@@ -882,40 +792,6 @@ func (qb *Model) Find(ctx context.Context, dest interface{}) *QueryResult {
 	if qb.sqlFetch {
 		completeSQL := buildCompleteSQL(query, args)
 		fmt.Printf("完整SQL: %s\n原始SQL: %s\n参数: %v\n", completeSQL, query, args)
-=======
-// Find 执行查询
-func (qb *Model) Find(ctx context.Context, dest interface{}) *QueryResult {
-	query, args := qb.buildQuery()
-
-	// 如果设置了SQLFetch，只输出SQL不执行查询
-	if qb.sqlFetch {
-		fmt.Printf("SQL: %s\nArgs: %v\n", query, args)
-		return &QueryResult{
-			data:  dest,
-			err:   nil,
-			query: query,
-			args:  args,
-		}
-	}
-
-	err := qb.db.Query(ctx, dest, query, args...)
-	return &QueryResult{
-		data:  dest,
-		err:   err,
-		query: query,
-		args:  args,
-	}
-}
-
-// FindOne 执行单条查询
-func (qb *Model) FindOne(ctx context.Context, dest interface{}) *QueryResult {
-	qb.Limit(1)
-	query, args := qb.buildQuery()
-
-	// 如果设置了SQLFetch，只输出SQL不执行查询
-	if qb.sqlFetch {
-		fmt.Printf("SQL: %s\nArgs: %v\n", query, args)
->>>>>>> fix-module-path
 		return &QueryResult{
 			data:  dest,
 			err:   nil,
@@ -925,13 +801,11 @@ func (qb *Model) FindOne(ctx context.Context, dest interface{}) *QueryResult {
 	}
 
 	err := qb.db.QueryRow(ctx, dest, query, args...)
-<<<<<<< HEAD
+
 	if err != nil && err == sql.ErrNoRows {
 		err = nil
 		dest = nil
 	}
-=======
->>>>>>> fix-module-path
 	return &QueryResult{
 		data:  dest,
 		err:   err,
@@ -940,7 +814,6 @@ func (qb *Model) FindOne(ctx context.Context, dest interface{}) *QueryResult {
 	}
 }
 
-<<<<<<< HEAD
 // Select 查询多条记录
 func (qb *Model) Select(ctx context.Context, dest interface{}) *QueryResult {
 	query, args := qb.buildQuery(ctx)
@@ -1059,16 +932,6 @@ func (qb *Model) Count(ctx context.Context) *QueryResult {
 	if qb.sqlFetch {
 		completeSQL := buildCompleteSQL(query, args)
 		fmt.Printf("完整SQL: %s\n原始SQL: %s\n参数: %v\n", completeSQL, query, args)
-=======
-// Count 统计数量
-func (qb *Model) Count(ctx context.Context) *QueryResult {
-	qb.fields = []string{"COUNT(*)"}
-	query, args := qb.buildQuery()
-
-	// 如果设置了SQLFetch，只输出SQL不执行查询
-	if qb.sqlFetch {
-		fmt.Printf("SQL: %s\nArgs: %v\n", query, args)
->>>>>>> fix-module-path
 		return &QueryResult{
 			data:  int64(0),
 			err:   nil,
@@ -1076,18 +939,12 @@ func (qb *Model) Count(ctx context.Context) *QueryResult {
 			args:  args,
 		}
 	}
-<<<<<<< HEAD
 	var count int64
 	err := qb.db.QueryRow(ctx, &count, query, args...)
 	if err != nil && err == sql.ErrNoRows {
 		err = nil
 		count = 0
 	}
-=======
-
-	var count int64
-	err := qb.db.QueryRow(ctx, &count, query, args...)
->>>>>>> fix-module-path
 	return &QueryResult{
 		data:  count,
 		err:   err,
@@ -1126,7 +983,6 @@ func (qb *Model) Exists(ctx context.Context) *QueryResult {
 	}
 }
 
-<<<<<<< HEAD
 // Raw 执行原生SQL查询
 func (qb *Model) Raw(ctx context.Context, dest interface{}, query string, args ...interface{}) *QueryResult {
 	// 如果设置了SQLFetch，只输出SQL不执行查询
@@ -1206,18 +1062,6 @@ func (qb *Model) Sum(ctx context.Context, field string) *QueryResult {
 		fmt.Printf("完整SQL: %s\n原始SQL: %s\n参数: %v\n", completeSQL, query, args)
 		return &QueryResult{
 			data:  int64(0),
-=======
-// Sum 查询指定字段的合计数
-func (qb *Model) Sum(ctx context.Context, field string) *QueryResult {
-	qb.fields = []string{fmt.Sprintf("SUM(%s)", field)}
-	query, args := qb.buildQuery()
-
-	// 如果设置了SQLFetch，只输出SQL不执行查询
-	if qb.sqlFetch {
-		fmt.Printf("SQL: %s\nArgs: %v\n", query, args)
-		return &QueryResult{
-			data:  float64(0),
->>>>>>> fix-module-path
 			err:   nil,
 			query: query,
 			args:  args,
@@ -1244,7 +1088,6 @@ func (qb *Model) Sum(ctx context.Context, field string) *QueryResult {
 func (qb *Model) Value(ctx context.Context, field string) *QueryResult {
 	qb.fields = []string{field}
 	qb.Limit(1)
-<<<<<<< HEAD
 	query, args := qb.buildQuery(ctx)
 
 	// 如果设置了SQLFetch，只输出SQL不执行查询
@@ -1253,32 +1096,18 @@ func (qb *Model) Value(ctx context.Context, field string) *QueryResult {
 		fmt.Printf("完整SQL: %s\n原始SQL: %s\n参数: %v\n", completeSQL, query, args)
 		return &QueryResult{
 			data:  int64(0),
-=======
-	query, args := qb.buildQuery()
-
-	// 如果设置了SQLFetch，只输出SQL不执行查询
-	if qb.sqlFetch {
-		fmt.Printf("SQL: %s\nArgs: %v\n", query, args)
-		return &QueryResult{
-			data:  nil,
->>>>>>> fix-module-path
 			err:   nil,
 			query: query,
 			args:  args,
 		}
 	}
 
-<<<<<<< HEAD
 	var value string
 	err := qb.db.QueryRow(ctx, &value, query, args...)
 	if err != nil && err == sql.ErrNoRows {
 		err = nil
 		value = ""
 	}
-=======
-	var value interface{}
-	err := qb.db.QueryRow(ctx, &value, query, args...)
->>>>>>> fix-module-path
 	return &QueryResult{
 		data:  value,
 		err:   err,
@@ -1287,7 +1116,6 @@ func (qb *Model) Value(ctx context.Context, field string) *QueryResult {
 	}
 }
 
-<<<<<<< HEAD
 // Column 获取单一字段的所有值 - 使用QueryRows处理多行数据
 func (qb *Model) Column(ctx context.Context, field string, dest interface{}) *QueryResult {
 	qb.fields = []string{field}
@@ -1297,16 +1125,6 @@ func (qb *Model) Column(ctx context.Context, field string, dest interface{}) *Qu
 	if qb.sqlFetch {
 		completeSQL := buildCompleteSQL(query, args)
 		fmt.Printf("完整SQL: %s\n原始SQL: %s\n参数: %v\n", completeSQL, query, args)
-=======
-// Column 获取单一字段的所有值
-func (qb *Model) Column(ctx context.Context, field string) *QueryResult {
-	qb.fields = []string{field}
-	query, args := qb.buildQuery()
-
-	// 如果设置了SQLFetch，只输出SQL不执行查询
-	if qb.sqlFetch {
-		fmt.Printf("SQL: %s\nArgs: %v\n", query, args)
->>>>>>> fix-module-path
 		return &QueryResult{
 			data:  []interface{}{},
 			err:   nil,
@@ -1314,7 +1132,6 @@ func (qb *Model) Column(ctx context.Context, field string) *QueryResult {
 			args:  args,
 		}
 	}
-<<<<<<< HEAD
 	var result interface{}
 	var err error
 
@@ -1824,20 +1641,12 @@ func (qb *Model) InsertAll(ctx context.Context, data ...interface{}) *QueryResul
 	result, err := qb.db.Exec(ctx, query, args...)
 	return &QueryResult{
 		data:  result,
-=======
-
-	var results []interface{}
-	err := qb.db.Query(ctx, &results, query, args...)
-	return &QueryResult{
-		data:  results,
->>>>>>> fix-module-path
 		err:   err,
 		query: query,
 		args:  args,
 	}
 }
 
-<<<<<<< HEAD
 // Update 数据更新
 // Update 数据更新
 func (qb *Model) Update(ctx context.Context, data ...interface{}) *QueryResult {
@@ -2276,10 +2085,6 @@ func (qb *Model) Delete(ctx context.Context) *QueryResult {
 // buildQuery 构建SQL查询（修改以支持软删除）
 // buildQuery 构建SQL查询（修改：默认不添加软删除过滤，只有WithTrashed时才查询软删除数据）
 func (qb *Model) buildQuery(ctx context.Context) (string, []interface{}) {
-=======
-// buildQuery 构建SQL查询
-func (qb *Model) buildQuery() (string, []interface{}) {
->>>>>>> fix-module-path
 	var sql strings.Builder
 	var args []interface{}
 
@@ -2314,7 +2119,6 @@ func (qb *Model) buildQuery() (string, []interface{}) {
 	}
 
 	// WHERE 子句
-<<<<<<< HEAD
 	conditions := make([]string, 0)
 
 	// 处理其他WHERE条件
@@ -2347,21 +2151,6 @@ func (qb *Model) buildQuery() (string, []interface{}) {
 	if len(conditions) > 0 {
 		sql.WriteString(" WHERE ")
 		sql.WriteString(strings.Join(conditions, ""))
-=======
-	if len(qb.where) > 0 {
-		sql.WriteString(" WHERE ")
-		for i, where := range qb.where {
-			if i > 0 || where.operator != "" {
-				sql.WriteString(" ")
-				sql.WriteString(where.operator)
-				sql.WriteString(" ")
-			}
-			sql.WriteString(where.field)
-			sql.WriteString(" ")
-			sql.WriteString(where.cond)
-			args = append(args, where.args...)
-		}
->>>>>>> fix-module-path
 	}
 
 	// GROUP BY 子句
@@ -2418,7 +2207,6 @@ func (qb *Model) buildQuery() (string, []interface{}) {
 
 // isSliceEmpty 辅助方法：判断切片是否为空
 func (r *QueryResult) isSliceEmpty(v interface{}) bool {
-<<<<<<< HEAD
 	rv := reflect.ValueOf(v)
 	// 处理指针类型
 	for rv.Kind() == reflect.Ptr {
@@ -2777,9 +2565,3 @@ func (qb *Model) SaveOrUpdate(ctx context.Context, data ...interface{}) *QueryRe
 		lastId: lastInsertId,
 	}
 }
-=======
-	// 这里可以添加更多的反射逻辑来判断不同类型的空值
-	// 简化实现，主要处理常见的切片类型
-	return false
-}
->>>>>>> fix-module-path

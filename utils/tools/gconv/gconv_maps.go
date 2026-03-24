@@ -1,8 +1,8 @@
 package gconv
 
 import (
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gconv/internal/converter"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/json"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gconv/internal/converter"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/json"
 )
 
 // SliceMap is alias of Maps.

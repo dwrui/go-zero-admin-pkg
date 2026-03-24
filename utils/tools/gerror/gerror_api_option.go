@@ -1,6 +1,6 @@
 package gerror
 
-import "github.com/dwrui/go-zero-admin/pkg/utils/tools/gcode"
+import "github.com/dwrui/go-zero-admin-pkg/utils/tools/gcode"
 
 // 选项是制造错误的选项。
 type Option struct {

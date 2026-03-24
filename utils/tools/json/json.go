@@ -4,7 +4,7 @@ package json
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gerror"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gerror"
 	"io"
 )
 

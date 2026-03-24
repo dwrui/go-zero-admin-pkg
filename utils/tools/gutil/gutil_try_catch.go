@@ -2,8 +2,8 @@ package gutil
 
 import (
 	"context"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gcode"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gerror"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gcode"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gerror"
 )
 
 // Throw throws out an exception, which can be caught be TryCatch or recover.

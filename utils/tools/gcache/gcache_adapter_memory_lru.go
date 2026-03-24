@@ -1,8 +1,8 @@
 package gcache
 
 import (
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/glist"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gmap"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/glist"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gmap"
 	"sync"
 )
 

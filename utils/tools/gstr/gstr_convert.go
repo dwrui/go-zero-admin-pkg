@@ -3,7 +3,7 @@ package gstr
 import (
 	"bytes"
 	"fmt"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/grand"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/grand"
 	"math"
 	"regexp"
 	"strconv"

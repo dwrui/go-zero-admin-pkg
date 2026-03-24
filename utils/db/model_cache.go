@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gcache"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gcache"
 )
 
 type CacheConfig struct {

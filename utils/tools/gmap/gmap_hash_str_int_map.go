@@ -1,10 +1,10 @@
 package gmap
 
 import (
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/empty"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gconv"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/json"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/rwmutex"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/empty"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gconv"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/json"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/rwmutex"
 )
 
 // StrIntMap 实现了带有RWMutex读写锁开关的 map[string]int。

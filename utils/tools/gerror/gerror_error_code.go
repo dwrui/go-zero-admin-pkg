@@ -1,7 +1,7 @@
 package gerror
 
 import (
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gcode"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gcode"
 )
 
 // Code returns the error code.

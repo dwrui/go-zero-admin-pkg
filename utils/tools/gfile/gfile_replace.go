@@ -1,7 +1,7 @@
 package gfile
 
 import (
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gstr"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gstr"
 )
 
 // ReplaceFile replaces content for file `path`.

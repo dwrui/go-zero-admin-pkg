@@ -2,13 +2,13 @@
 package gjson
 
 import (
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gcode"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gconv"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gerror"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gstr"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/reflection"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/rwmutex"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/utils"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gcode"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gconv"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gerror"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gstr"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/reflection"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/rwmutex"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/utils"
 	"reflect"
 	"strconv"
 	"strings"

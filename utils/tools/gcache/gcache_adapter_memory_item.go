@@ -1,7 +1,7 @@
 package gcache
 
 import (
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gtime"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gtime"
 )
 
 // IsExpired 检查 `item` 是否过期。

@@ -2,11 +2,11 @@ package gjson
 
 import (
 	"bytes"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gcode"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gerror"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gregex"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gstr"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/json"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gcode"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gerror"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gregex"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gstr"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/json"
 )
 
 // LoadWithOptions creates a Json object from given JSON format content and options.

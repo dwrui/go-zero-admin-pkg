@@ -1,9 +1,9 @@
 package gtype
 
 import (
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/deepcopy"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gconv"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/json"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/deepcopy"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gconv"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/json"
 	"sync/atomic"
 )
 

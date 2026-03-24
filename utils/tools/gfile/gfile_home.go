@@ -2,7 +2,7 @@ package gfile
 
 import (
 	"bytes"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gerror"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gerror"
 	"os"
 	"os/exec"
 	"os/user"

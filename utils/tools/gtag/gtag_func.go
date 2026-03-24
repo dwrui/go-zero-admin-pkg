@@ -1,7 +1,7 @@
 package gtag
 
 import (
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gerror"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gerror"
 	"regexp"
 )
 

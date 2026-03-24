@@ -14,8 +14,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gstr"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gvar"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gstr"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gvar"
 	"github.com/zeromicro/go-zero/rest/httpx"
 )
 

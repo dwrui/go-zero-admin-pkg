@@ -1,7 +1,7 @@
 package gmap
 
 import (
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gtree"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gtree"
 )
 
 // 基于红黑树的树状图，RedBlackTree的别名。

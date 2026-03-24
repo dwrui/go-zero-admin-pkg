@@ -7,7 +7,7 @@
 package plugin
 
 import (
-	"github.com/dwrui/go-zero-admin/pkg/utils/plugin/ipregion"
+	"github.com/dwrui/go-zero-admin-pkg/utils/plugin/ipregion"
 )
 
 // 获取ip属地

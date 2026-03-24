@@ -3,8 +3,8 @@ package gfile
 import (
 	"bytes"
 	"fmt"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/garray"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gerror"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/garray"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gerror"
 )
 
 // Search searches file by name `name` in following paths with priority:

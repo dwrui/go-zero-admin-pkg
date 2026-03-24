@@ -6,7 +6,7 @@
 package gerror
 
 import (
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gcode"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gcode"
 )
 
 // IEqual 是 Equal 功能的接口。

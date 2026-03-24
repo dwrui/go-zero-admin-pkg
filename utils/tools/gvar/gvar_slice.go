@@ -1,6 +1,6 @@
 package gvar
 
-import "github.com/dwrui/go-zero-admin/pkg/utils/tools/gconv"
+import "github.com/dwrui/go-zero-admin-pkg/utils/tools/gconv"
 
 // Ints converts and returns `v` as []int.
 func (v *Var) Ints() []int {

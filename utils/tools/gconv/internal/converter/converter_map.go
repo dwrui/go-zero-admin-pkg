@@ -1,11 +1,11 @@
 package converter
 
 import (
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/empty"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gconv/internal/localinterface"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gtag"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/json"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/utils"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/empty"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gconv/internal/localinterface"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gtag"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/json"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/utils"
 	"reflect"
 	"strings"
 )

@@ -1,8 +1,8 @@
 package gvar
 
 import (
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/deepcopy"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gutil"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/deepcopy"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gutil"
 )
 
 // Copy does a deep copy of current Var and returns a pointer to this Var.

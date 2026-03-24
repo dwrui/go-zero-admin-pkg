@@ -1,10 +1,10 @@
 package gmap
 
 import (
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/empty"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gconv"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/json"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/rwmutex"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/empty"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gconv"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/json"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/rwmutex"
 )
 
 // IntIntMap 实现了带有 RWMutex 开关的 map[int]int。

@@ -1,7 +1,7 @@
 package ga
 
 import (
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gconv"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gconv"
 )
 
 // any数据类型转成int

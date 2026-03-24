@@ -2,10 +2,10 @@ package gtree
 
 import (
 	"fmt"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gconv"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gstr"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gvar"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/rwmutex"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gconv"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gstr"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gvar"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/rwmutex"
 
 	"github.com/emirpasic/gods/trees/btree"
 )

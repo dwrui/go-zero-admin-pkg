@@ -4,9 +4,9 @@ package gset
 
 import (
 	"bytes"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gconv"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/json"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/rwmutex"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gconv"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/json"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/rwmutex"
 )
 
 // IntSet 由 int 项组成的集合。

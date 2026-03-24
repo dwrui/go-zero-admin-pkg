@@ -3,12 +3,12 @@ package gmap
 import (
 	"bytes"
 	"fmt"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/empty"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gconv"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/glist"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gvar"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/json"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/rwmutex"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/empty"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gconv"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/glist"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gvar"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/json"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/rwmutex"
 )
 
 // ListMap 是一个保持插入顺序的映射。

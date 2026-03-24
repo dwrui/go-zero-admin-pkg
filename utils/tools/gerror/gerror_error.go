@@ -3,7 +3,7 @@ package gerror
 import (
 	"errors"
 	"fmt"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gcode"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gcode"
 	"runtime"
 	"strings"
 )

@@ -3,7 +3,7 @@ package jwt
 import (
 	"errors"
 	"fmt"
-	"github.com/dwrui/go-zero-admin/pkg/utils/ga"
+	"github.com/dwrui/go-zero-admin-pkg/utils/ga"
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"

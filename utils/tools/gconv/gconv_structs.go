@@ -1,6 +1,6 @@
 package gconv
 
-import "github.com/dwrui/go-zero-admin/pkg/utils/tools/gconv/internal/converter"
+import "github.com/dwrui/go-zero-admin-pkg/utils/tools/gconv/internal/converter"
 
 // Structs converts any slice to given struct slice.
 // Also see Scan, Struct.

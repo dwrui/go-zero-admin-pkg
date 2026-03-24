@@ -2,7 +2,7 @@ package ga
 
 //import (
 //	"context"
-//	"github.com/dwrui/go-zero-admin/pkg/utils/plugin"
+//	"github.com/dwrui/go-zero-admin-pkg/utils/plugin"
 //	"net/http"
 //)
 //

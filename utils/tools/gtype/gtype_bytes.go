@@ -3,8 +3,8 @@ package gtype
 import (
 	"bytes"
 	"encoding/base64"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gconv"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gerror"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gconv"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gerror"
 	"sync/atomic"
 )
 

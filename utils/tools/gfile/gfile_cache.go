@@ -2,10 +2,10 @@ package gfile
 
 import (
 	"context"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/command"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gcache"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gcode"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gerror"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/command"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gcache"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gcode"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gerror"
 	"time"
 )
 

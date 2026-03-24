@@ -2,8 +2,8 @@
 package gmeta
 
 import (
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gstructs"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gvar"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gstructs"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gvar"
 	"reflect"
 )
 

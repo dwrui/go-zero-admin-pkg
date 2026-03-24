@@ -1,6 +1,6 @@
 package gvar
 
-import "github.com/dwrui/go-zero-admin/pkg/utils/tools/gconv"
+import "github.com/dwrui/go-zero-admin-pkg/utils/tools/gconv"
 
 // MapOption specifies the option for map converting.
 type MapOption = gconv.MapOption

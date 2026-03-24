@@ -2,7 +2,7 @@ package gvalid
 
 import (
 	"fmt"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gerror"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gerror"
 	"github.com/go-playground/validator/v10"
 	"reflect"
 	"regexp"

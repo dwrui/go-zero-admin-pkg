@@ -1,8 +1,8 @@
 package structcache
 
 import (
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gtag"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/utils"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gtag"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/utils"
 	"reflect"
 )
 

@@ -1,8 +1,8 @@
 package gfile
 
 import (
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gregex"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gstr"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gregex"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gstr"
 	"os"
 	"runtime"
 	"strings"

@@ -1,7 +1,7 @@
 package gjson
 
 import (
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/json"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/json"
 )
 
 // ========================================================================

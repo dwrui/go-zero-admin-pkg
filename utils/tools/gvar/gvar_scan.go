@@ -1,7 +1,7 @@
 package gvar
 
 import (
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gconv"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gconv"
 )
 
 // Scan automatically checks the type of `pointer` and converts value of Var to `pointer`.

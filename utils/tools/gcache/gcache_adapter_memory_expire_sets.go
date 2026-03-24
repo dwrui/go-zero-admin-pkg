@@ -1,7 +1,7 @@
 package gcache
 
 import (
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gset"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gset"
 	"sync"
 )
 

@@ -2,7 +2,7 @@
 package structcache
 
 import (
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gconv/internal/localinterface"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gconv/internal/localinterface"
 	"reflect"
 	"sync"
 )

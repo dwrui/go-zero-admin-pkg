@@ -1,8 +1,8 @@
 package ga
 
 import (
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gvalid"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gvar"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gvalid"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gvar"
 )
 
 // 把任何类型转var

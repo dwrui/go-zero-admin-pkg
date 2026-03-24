@@ -1,7 +1,7 @@
 package gutil
 
 import (
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/deepcopy"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/deepcopy"
 )
 
 // Copy 返回 v 的一个深度拷贝。

@@ -1,7 +1,7 @@
 package gfile
 
 import (
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/garray"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/garray"
 	"strings"
 )
 

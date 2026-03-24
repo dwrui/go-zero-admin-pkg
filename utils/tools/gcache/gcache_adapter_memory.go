@@ -2,12 +2,12 @@ package gcache
 
 import (
 	"context"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/glist"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gset"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gtime"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gtimer"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gtype"
-	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gvar"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/glist"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gset"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gtime"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gtimer"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gtype"
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gvar"
 	"math"
 	"time"
 )
