@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/dwrui/go-zero-admin/pkg/uploads/aliyun"
-	"github.com/dwrui/go-zero-admin/pkg/uploads/local"
-	"github.com/dwrui/go-zero-admin/pkg/uploads/qiniu"
-	"github.com/dwrui/go-zero-admin/pkg/uploads/tencent"
-	"github.com/dwrui/go-zero-admin/pkg/uploads/types"
+	"github.com/dwrui/go-zero-admin-pkg/uploads/aliyun"
+	"github.com/dwrui/go-zero-admin-pkg/uploads/local"
+	"github.com/dwrui/go-zero-admin-pkg/uploads/qiniu"
+	"github.com/dwrui/go-zero-admin-pkg/uploads/tencent"
+	"github.com/dwrui/go-zero-admin-pkg/uploads/types"
 )
 
 var (

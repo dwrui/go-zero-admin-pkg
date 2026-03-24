@@ -12,7 +12,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/dwrui/go-zero-admin/pkg/uploads/types"
+	"github.com/dwrui/go-zero-admin-pkg/uploads/types"
 )
 
 type FileManager struct {

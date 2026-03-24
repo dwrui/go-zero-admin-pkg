@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/dwrui/go-zero-admin/pkg/uploads/types"
+	"github.com/dwrui/go-zero-admin-pkg/uploads/types"
 	"github.com/tencentyun/cos-go-sdk-v5"
 )
 
@@ -48,7 +48,7 @@ func NewTencentStorage(config *types.TencentConfig) (*TencentStorage, error) {
 
 	return &TencentStorage{
 		client: client,
-		config:   config,
+		config: config,
 	}, nil
 }
 

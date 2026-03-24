@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/dwrui/go-zero-admin/pkg/uploads/types"
+	"github.com/dwrui/go-zero-admin-pkg/uploads/types"
 	"github.com/qiniu/go-sdk/v7/auth/qbox"
 	"github.com/qiniu/go-sdk/v7/storage"
 )

@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/aliyun/aliyun-oss-go-sdk/oss"
-	"github.com/dwrui/go-zero-admin/pkg/uploads/types"
+	"github.com/dwrui/go-zero-admin-pkg/uploads/types"
 )
 
 type AliyunStorage struct {
