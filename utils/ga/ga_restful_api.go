@@ -13,7 +13,6 @@ type (
 		Message string      `json:"message"`
 		Data    interface{} `json:"data"`
 		Exdata  interface{} `json:"exdata"`
-		Token   string      `json:"token"`
 		Time    int64       `json:"time"`
 	}
 )
