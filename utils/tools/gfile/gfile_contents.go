@@ -4,8 +4,11 @@ import (
 	"bufio"
 	"io"
 	"os"
+<<<<<<< HEAD
 
 	"github.com/zeromicro/go-zero/core/logx"
+=======
+>>>>>>> fix-module-path
 )
 
 var (
@@ -47,7 +50,11 @@ func putContents(path string, data []byte, flag int, perm os.FileMode) error {
 	// Write data.
 	var n int
 	if n, err = f.Write(data); err != nil {
+<<<<<<< HEAD
 		logx.Errorf("Write data to file %s failed: %v", path, err)
+=======
+		err = gerror.Wrapf(err, `Write data to file "%s" failed`, path)
+>>>>>>> fix-module-path
 		return err
 	} else if n < len(data) {
 		return io.ErrShortWrite
@@ -59,7 +66,11 @@ func putContents(path string, data []byte, flag int, perm os.FileMode) error {
 func Truncate(path string, size int) (err error) {
 	err = os.Truncate(path, int64(size))
 	if err != nil {
+<<<<<<< HEAD
 		logx.Errorf(`os.Truncate failed for file "%s", size "%d"`, path, size)
+=======
+		err = gerror.Wrapf(err, `os.Truncate failed for file "%s", size "%d"`, path, size)
+>>>>>>> fix-module-path
 	}
 	return
 }

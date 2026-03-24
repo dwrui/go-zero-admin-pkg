@@ -2,12 +2,18 @@ package ga
 
 import (
 	"context"
+<<<<<<< HEAD
 	"fmt"
 	"github.com/dwrui/go-zero-admin/pkg/utils/tools/empty"
 	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gcache"
 	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gmd5"
 	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gvar"
 	"reflect"
+=======
+	"github.com/dwrui/go-zero-admin/pkg/utils/tools/empty"
+	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gcache"
+	"github.com/dwrui/go-zero-admin/pkg/utils/tools/gmd5"
+>>>>>>> fix-module-path
 	"time"
 )
 
@@ -54,6 +60,7 @@ func IsNil(value interface{}, traceSource ...bool) bool {
 func IsEmpty(value interface{}, traceSource ...bool) bool {
 	return empty.IsEmpty(value, traceSource...)
 }
+<<<<<<< HEAD
 
 // 数据格式化成【】string
 func FormatColumnData(data interface{}) []interface{} {
@@ -157,3 +164,5 @@ func reflectToInterfaceSlice(data interface{}) []interface{} {
 
 	return result
 }
+=======
+>>>>>>> fix-module-path

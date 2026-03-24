@@ -236,8 +236,11 @@ func MustKeyStrings(ctx context.Context) []string {
 func MustValues(ctx context.Context) []interface{} {
 	return defaultCache.MustValues(ctx)
 }
+<<<<<<< HEAD
 
 // Clear 清除缓存中的所有数据。
 func Clear(ctx context.Context) error {
 	return defaultCache.Clear(ctx)
 }
+=======
+>>>>>>> fix-module-path

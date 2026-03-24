@@ -3,9 +3,14 @@ package db
 import (
 	"context"
 	"database/sql"
+<<<<<<< HEAD
 	"strings"
 
 	"github.com/zeromicro/go-zero/core/stores/sqlx"
+=======
+	"github.com/zeromicro/go-zero/core/stores/sqlx"
+	"strings"
+>>>>>>> fix-module-path
 )
 
 // DBManager 数据库管理器
@@ -78,16 +83,21 @@ func (db *DBManager) Exec(ctx context.Context, query string, args ...interface{}
 
 // Query 查询多条记录
 func (db *DBManager) Query(ctx context.Context, v interface{}, query string, args ...interface{}) error {
+<<<<<<< HEAD
 	return db.conn.QueryRowsPartialCtx(ctx, v, query, args...)
 }
 
 // QueryRows 查询多条记录
 func (db *DBManager) QueryRows(ctx context.Context, v interface{}, query string, args ...interface{}) error {
 	return db.conn.QueryRowsPartialCtx(ctx, v, query, args...)
+=======
+	return db.conn.QueryRowsCtx(ctx, v, query, args...)
+>>>>>>> fix-module-path
 }
 
 // QueryRow 查询单条记录
 func (db *DBManager) QueryRow(ctx context.Context, v interface{}, query string, args ...interface{}) error {
+<<<<<<< HEAD
 	return db.conn.QueryRowPartialCtx(ctx, v, query, args...)
 }
 
@@ -98,4 +108,7 @@ func (db *DBManager) QueryRaw(ctx context.Context, query string, args ...interfa
 		return nil, err
 	}
 	return rawDB.QueryContext(ctx, query, args...)
+=======
+	return db.conn.QueryRowCtx(ctx, v, query, args...)
+>>>>>>> fix-module-path
 }
