@@ -1,7 +1,7 @@
 package configcenter
 
 import (
-	"configcenter/configcenter"
+	"github.com/dwrui/go-zero-admin-pkg/configcenter/configcenter"
 	"context"
 	"sync"
 
