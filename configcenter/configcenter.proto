@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package configcenter;
+
+option go_package = "./configcenter";
+
+message GetConfigRequest {
+  string category_key = 1;
+}
+
+message GetConfigResponse {
+  map<string, string> configs = 1;
+}
+
+message GetConfigInfoRequest {
+  string config_type = 1;
+}
+
+message GetConfigInfoResponse {
+  string config_value = 1;
+}
+
+service ConfigApiService {
+  rpc GetConfig(GetConfigRequest) returns (GetConfigResponse);
+  rpc GetConfigInfo(GetConfigInfoRequest) returns (GetConfigInfoResponse);
+}
