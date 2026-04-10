@@ -2,9 +2,9 @@ package jwt
 
 import (
 	"errors"
-	"fmt"
-	"github.com/dwrui/go-zero-admin-pkg/utils/ga"
 	"time"
+
+	"github.com/dwrui/go-zero-admin-pkg/utils/ga"
 
 	"github.com/golang-jwt/jwt/v4"
 )
@@ -32,7 +32,6 @@ type CustomClaims struct {
 func GenerateToken(config JwtConfig, data map[string]interface{}) (string, error) {
 	now := time.Now()
 	expireTime := now.Add(time.Duration(config.AccessExpire) * time.Second)
-	fmt.Println(ga.Uint64(data["id"]))
 	claims := CustomClaims{
 		UserId:     ga.Uint64(data["id"]),
 		BusinessId: ga.Uint64(data["business_id"]),

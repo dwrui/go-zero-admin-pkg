@@ -23,7 +23,7 @@ func GetGlobalEnums() (string, error) {
 }
 
 // GetEnumsByType retrieves and returns the stored enums json by type name.
-// The type name is like: gofly/utils/tools/gjson.ContentType
+// The type name is like: goza/utils/tools/gjson.ContentType
 func GetEnumsByType(typeName string) string {
 	return string(enumsMap[typeName])
 }

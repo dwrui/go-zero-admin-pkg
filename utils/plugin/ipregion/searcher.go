@@ -2,7 +2,7 @@
 // ipregion database v2.0 searcher.
 // @Note this is a Not thread safe implementation.
 //
-// @Author gofly
+// @Author goza
 // @Date   2024/08/19
 package ipregion
 
@@ -86,11 +86,6 @@ type Searcher struct {
 }
 
 func baseNew(vIndex []byte, cBuff []byte) (*Searcher, error) {
-	var err error
-	path, _ := os.Getwd()
-	parentDir := filepath.Dir(path)
-	parentsDir := filepath.Dir(parentDir)
-	dbFile := filepath.Join(parentsDir, "/common/static/ipregion/database.xdb")
 	// content buff first
 	if cBuff != nil {
 		return &Searcher{
@@ -99,10 +94,35 @@ func baseNew(vIndex []byte, cBuff []byte) (*Searcher, error) {
 		}, nil
 	}
 
-	// open the xdb binary file
-	handle, err := os.OpenFile(dbFile, os.O_RDONLY, 0600)
+	// 尝试从多个可能的路径查找数据库文件
+	possiblePaths := []string{
+		"/app/common/static/ipregion/database.xdb",     // Docker 环境
+		"./common/static/ipregion/database.xdb",        // 相对路径
+	}
+
+	// 添加基于工作目录的相对路径
+	if wd, err := os.Getwd(); err == nil {
+		parentDir := filepath.Dir(wd)
+		parentsDir := filepath.Dir(parentDir)
+		possiblePaths = append(possiblePaths, filepath.Join(parentsDir, "/common/static/ipregion/database.xdb"))
+		possiblePaths = append(possiblePaths, filepath.Join(wd, "common/static/ipregion/database.xdb"))
+		possiblePaths = append(possiblePaths, filepath.Join(parentDir, "common/static/ipregion/database.xdb"))
+	}
+
+	var dbFile string
+	var handle *os.File
+	var err error
+
+	for _, path := range possiblePaths {
+		dbFile = path
+		handle, err = os.OpenFile(dbFile, os.O_RDONLY, 0600)
+		if err == nil {
+			break
+		}
+	}
+
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("无法找到 database.xdb 文件，已尝试路径: %v", possiblePaths)
 	}
 
 	return &Searcher{

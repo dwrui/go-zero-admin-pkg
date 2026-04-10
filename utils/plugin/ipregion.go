@@ -2,7 +2,7 @@
 // ipregion database v2.0 searcher.
 // @Note ip地址解析属地区
 //
-// @Author gofly
+// @Author goza
 // @Date   2024/08/19
 package plugin
 

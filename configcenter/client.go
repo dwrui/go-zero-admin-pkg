@@ -1,8 +1,8 @@
 package configcenter
 
 import (
-	"github.com/dwrui/go-zero-admin-pkg/configcenter/configcenter"
 	"context"
+	"github.com/dwrui/go-zero-admin-pkg/configcenter/configcenter"
 	"sync"
 
 	"github.com/zeromicro/go-zero/core/discov"

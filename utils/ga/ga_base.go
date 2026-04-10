@@ -7,8 +7,6 @@ import (
 	"io"
 	"net"
 	"net/http"
-	"os"
-	"path/filepath"
 	"reflect"
 	"strconv"
 	"strings"
@@ -23,16 +21,6 @@ import (
 func IsContain(items []interface{}, item string) bool {
 	for _, eachItem := range items {
 		if eachItem == item {
-			return true
-		}
-	}
-	return false
-}
-
-// 判断元素是否存在数组中-泛型val
-func IsContainVal(items []*gvar.Var, item *gvar.Var) bool {
-	for _, eachItem := range items {
-		if eachItem.String() == item.String() {
 			return true
 		}
 	}
@@ -134,18 +122,6 @@ func findChildrenRecursive(data []map[string]uint64, targetID uint64, idSet map[
 			}
 		}
 	}
-}
-
-// 合并数组-两个数组合并为一个数组
-func MergeArr(a []*gvar.Var, b []interface{}) []interface{} {
-	var arr []interface{}
-	for _, i := range a {
-		arr = append(arr, i)
-	}
-	for _, j := range b {
-		arr = append(arr, j)
-	}
-	return arr
 }
 
 // 合并数组-两个数组合并为一个数组
@@ -372,35 +348,6 @@ func GetMenuChildrenArray(pdata List, parent_id int64, pid_file string) List {
 		}
 	}
 	return returnList
-}
-
-// 删除本地附件
-func Del_file(file_list []*gvar.Var) {
-	path, _ := os.Getwd()
-	for _, val := range file_list {
-		deldir := filepath.Join(path, val.String())
-		os.Remove(deldir)
-	}
-}
-
-// 删除单文件本地附件
-func DelOneFile(file_path string) error {
-	path, _ := os.Getwd()
-	deldir := filepath.Join(path, file_path)
-	if _, err := os.Stat(deldir); err != nil && os.IsNotExist(err) { //文件不存在直接返回
-		return nil
-	}
-	return os.Remove(deldir)
-}
-
-// 获取请求参数id-用于数据保存或更新
-func GetEditId(idstr interface{}) (f_id float64) {
-	if idstr != nil {
-		f_id = Float64(idstr)
-	} else {
-		f_id = 0
-	}
-	return
 }
 
 // 日期时间转时间戳
