@@ -19,9 +19,9 @@ type CacheConfig struct {
 
 var defaultCacheConfig = &CacheConfig{
 	Enabled:     true,
-	DefaultTTL:  5 * time.Minute,
+	DefaultTTL:  15 * time.Minute,
 	Prefix:      "db_cache:",
-	CacheOnRead: false,
+	CacheOnRead: true,
 }
 
 func SetDefaultCacheConfig(config *CacheConfig) {

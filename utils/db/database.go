@@ -3,8 +3,8 @@ package db
 import (
 	"context"
 	"database/sql"
-
 	"strings"
+	"time"
 
 	"github.com/zeromicro/go-zero/core/stores/sqlx"
 )
@@ -12,7 +12,8 @@ import (
 // DBManager 数据库管理器
 type DBManager struct {
 	conn        sqlx.SqlConn
-	tablePrefix string // 表前缀
+	tablePrefix string       // 表前缀
+	poolConfig  DBPoolConfig // 连接池配置
 }
 
 // NewDBManager 创建数据库管理器
@@ -20,7 +21,28 @@ func NewDBManager(datasource string) *DBManager {
 	return &DBManager{
 		conn:        sqlx.NewSqlConn("mysql", datasource),
 		tablePrefix: "", // 默认无前缀
+		poolConfig: DBPoolConfig{
+			MaxOpenConns:    50,
+			MaxIdleConns:    25,
+			ConnMaxLifetime: 30 * time.Minute,
+			ConnMaxIdleTime: 10 * time.Minute,
+		},
 	}
+}
+
+// SetPoolConfig 设置连接池配置
+func (db *DBManager) SetPoolConfig(config DBPoolConfig) *DBManager {
+	db.poolConfig = config
+	
+	// 应用连接池配置到底层 sql.DB
+	if rawDB, err := db.conn.RawDB(); err == nil {
+		rawDB.SetMaxOpenConns(config.MaxOpenConns)
+		rawDB.SetMaxIdleConns(config.MaxIdleConns)
+		rawDB.SetConnMaxLifetime(config.ConnMaxLifetime)
+		rawDB.SetConnMaxIdleTime(config.ConnMaxIdleTime)
+	}
+	
+	return db
 }
 
 // SetTablePrefix 设置表前缀
