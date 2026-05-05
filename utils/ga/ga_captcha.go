@@ -29,11 +29,17 @@ func NewRedisStore(rds *redis.Redis) *RedisStore {
 }
 
 func (s *RedisStore) Set(id string, value string) error {
+	if s == nil || s.redis == nil {
+		return nil
+	}
 	key := "captcha:" + id
 	return s.redis.Setex(key, value, int(Expiration.Seconds()))
 }
 
 func (s *RedisStore) Get(id string, clear bool) string {
+	if s == nil || s.redis == nil {
+		return ""
+	}
 	key := "captcha:" + id
 	value, err := s.redis.Get(key)
 	if err != nil {
@@ -46,6 +52,9 @@ func (s *RedisStore) Get(id string, clear bool) string {
 }
 
 func (s *RedisStore) Verify(id, answer string, clear bool) bool {
+	if s == nil || s.redis == nil {
+		return false
+	}
 	key := "captcha:" + id
 	value, err := s.redis.Get(key)
 	if err != nil {
@@ -65,7 +74,7 @@ func GenerateCaptcha(show bool) (interface{}, error) {
 	driver := base64Captcha.NewDriverMath(39, 110, 0, 0, &color.RGBA{0, 0, 0, 1}, nil, []string{"wqy-microhei.ttc"})
 
 	var captcha *base64Captcha.Captcha
-	if redisStore != nil {
+	if redisStore != nil && redisStore.redis != nil {
 		captcha = base64Captcha.NewCaptcha(driver, redisStore)
 	} else {
 		store := base64Captcha.NewMemoryStore(10240, Expiration)
@@ -77,7 +86,7 @@ func GenerateCaptcha(show bool) (interface{}, error) {
 		return "", err
 	}
 
-	if redisStore != nil {
+	if redisStore != nil && redisStore.redis != nil {
 		redisStore.Set(id, answer)
 	}
 
@@ -92,7 +101,7 @@ func GenerateCaptcha(show bool) (interface{}, error) {
 }
 
 func VerifyCaptcha(id string, value string) bool {
-	if redisStore != nil {
+	if redisStore != nil && redisStore.redis != nil {
 		return redisStore.Verify(id, value, true)
 	}
 

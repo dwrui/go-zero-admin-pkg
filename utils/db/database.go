@@ -12,15 +12,22 @@ import (
 // DBManager 数据库管理器
 type DBManager struct {
 	conn        sqlx.SqlConn
-	tablePrefix string       // 表前缀
-	poolConfig  DBPoolConfig // 连接池配置
+	tablePrefix string
+	poolConfig  DBPoolConfig
+}
+
+// Session 事务会话
+type Session struct {
+	session     sqlx.Session
+	db          *DBManager
+	tablePrefix string
 }
 
 // NewDBManager 创建数据库管理器
 func NewDBManager(datasource string) *DBManager {
 	return &DBManager{
 		conn:        sqlx.NewSqlConn("mysql", datasource),
-		tablePrefix: "", // 默认无前缀
+		tablePrefix: "",
 		poolConfig: DBPoolConfig{
 			MaxOpenConns:    50,
 			MaxIdleConns:    25,
@@ -33,15 +40,12 @@ func NewDBManager(datasource string) *DBManager {
 // SetPoolConfig 设置连接池配置
 func (db *DBManager) SetPoolConfig(config DBPoolConfig) *DBManager {
 	db.poolConfig = config
-	
-	// 应用连接池配置到底层 sql.DB
 	if rawDB, err := db.conn.RawDB(); err == nil {
 		rawDB.SetMaxOpenConns(config.MaxOpenConns)
 		rawDB.SetMaxIdleConns(config.MaxIdleConns)
 		rawDB.SetConnMaxLifetime(config.ConnMaxLifetime)
 		rawDB.SetConnMaxIdleTime(config.ConnMaxIdleTime)
 	}
-	
 	return db
 }
 
@@ -56,13 +60,11 @@ func (db *DBManager) GetTablePrefix() string {
 	return db.tablePrefix
 }
 
-// formatTableName 格式化表名（自动添加前缀）
+// formatTableName 格式化表名
 func (db *DBManager) formatTableName(table string) string {
-	// 如果表名已经包含前缀，或者前缀为空，直接返回
 	if db.tablePrefix == "" || strings.HasPrefix(table, db.tablePrefix) {
 		return table
 	}
-	// 添加前缀
 	return db.tablePrefix + table
 }
 
@@ -70,7 +72,7 @@ func (db *DBManager) formatTableName(table string) string {
 func (db *DBManager) Model(table string) *Model {
 	return &Model{
 		db:       db,
-		table:    db.formatTableName(table), // 格式化表名
+		table:    db.formatTableName(table),
 		fields:   []string{"*"},
 		where:    make([]whereClause, 0),
 		joins:    make([]joinClause, 0),
@@ -88,10 +90,43 @@ func (db *DBManager) Table(table string) *Model {
 }
 
 // Trans 执行事务
-func (db *DBManager) Trans(ctx context.Context, fn func(context context.Context, session sqlx.Session) error) error {
+func (db *DBManager) Trans(ctx context.Context, fn func(context.Context, *Session) error) error {
 	return db.conn.TransactCtx(ctx, func(ctx context.Context, session sqlx.Session) error {
-		return fn(ctx, session)
+		sess := &Session{
+			session:     session,
+			db:          db,
+			tablePrefix: db.tablePrefix,
+		}
+		return fn(ctx, sess)
 	})
+}
+
+// Model 创建链式查询构建器（事务会话）
+func (s *Session) Model(table string) *Model {
+	var tableName string
+	if s.tablePrefix == "" || strings.HasPrefix(table, s.tablePrefix) {
+		tableName = table
+	} else {
+		tableName = s.tablePrefix + table
+	}
+	return &Model{
+		db:       s.db,
+		session:  s.session,
+		table:    tableName,
+		fields:   []string{"*"},
+		where:    make([]whereClause, 0),
+		joins:    make([]joinClause, 0),
+		groupBy:  make([]string, 0),
+		having:   make([]whereClause, 0),
+		orderBy:  make([]orderClause, 0),
+		page:     1,
+		pageSize: 10,
+	}
+}
+
+// Table 创建链式查询构建器（别名）
+func (s *Session) Table(table string) *Model {
+	return s.Model(table)
 }
 
 // Exec 执行SQL语句
@@ -114,7 +149,7 @@ func (db *DBManager) QueryRow(ctx context.Context, v interface{}, query string, 
 	return db.conn.QueryRowPartialCtx(ctx, v, query, args...)
 }
 
-// QueryRaw 执行原始查询返回*sql.Rows（用于动态表查询）
+// QueryRaw 执行原始查询返回*sql.Rows
 func (db *DBManager) QueryRaw(ctx context.Context, query string, args ...interface{}) (*sql.Rows, error) {
 	rawDB, err := db.conn.RawDB()
 	if err != nil {

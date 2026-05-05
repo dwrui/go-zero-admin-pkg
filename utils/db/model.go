@@ -13,11 +13,13 @@ import (
 	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gconv"
 	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gmap"
 	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gvar"
+	"github.com/zeromicro/go-zero/core/stores/sqlx"
 )
 
 // Model 链式查询构建器
 type Model struct {
 	db            *DBManager
+	session       sqlx.Session
 	table         string
 	alias         string
 	joins         []joinClause
@@ -44,6 +46,30 @@ type Model struct {
 	cacheTTL      time.Duration
 	cachePrefix   string
 	skipCache     bool
+}
+
+// execCtx 执行SQL（支持事务）
+func (qb *Model) execCtx(ctx context.Context, query string, args ...interface{}) (sql.Result, error) {
+	if qb.session != nil {
+		return qb.session.ExecCtx(ctx, query, args...)
+	}
+	return qb.db.Exec(ctx, query, args...)
+}
+
+// queryRowCtx 查询单行（支持事务）
+func (qb *Model) queryRowCtx(ctx context.Context, dest interface{}, query string, args ...interface{}) error {
+	if qb.session != nil {
+		return qb.session.QueryRowPartialCtx(ctx, dest, query, args...)
+	}
+	return qb.db.QueryRow(ctx, dest, query, args...)
+}
+
+// queryRowsCtx 查询多行（支持事务）
+func (qb *Model) queryRowsCtx(ctx context.Context, dest interface{}, query string, args ...interface{}) error {
+	if qb.session != nil {
+		return qb.session.QueryRowsPartialCtx(ctx, dest, query, args...)
+	}
+	return qb.db.Query(ctx, dest, query, args...)
 }
 
 // convertToMap 将任意类型转换为map[string]interface{}
@@ -1411,7 +1437,7 @@ func (qb *Model) Save(ctx context.Context, data ...interface{}) *QueryResult {
 		}
 	}
 
-	result, err := qb.db.Exec(ctx, query, args...)
+	result, err := qb.execCtx(ctx, query, args...)
 	lastInsertID, _ := result.LastInsertId()
 	return &QueryResult{
 		data:   result,
@@ -1638,7 +1664,7 @@ func (qb *Model) InsertAll(ctx context.Context, data ...interface{}) *QueryResul
 		}
 	}
 
-	result, err := qb.db.Exec(ctx, query, args...)
+	result, err := qb.execCtx(ctx, query, args...)
 	return &QueryResult{
 		data:  result,
 		err:   err,
@@ -1782,7 +1808,7 @@ func (qb *Model) Update(ctx context.Context, data ...interface{}) *QueryResult {
 		}
 	}
 
-	result, err := qb.db.Exec(ctx, query, args...)
+	result, err := qb.execCtx(ctx, query, args...)
 	if err != nil {
 		return &QueryResult{
 			data:  result,

@@ -452,16 +452,24 @@ func ResData(r *http.Request, data any) error {
 	}
 
 	//手动解析JSON
+
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		return errors.New("读取请求失败")
 	}
 	defer r.Body.Close()
+
 	if string(body) == "" {
 		return nil
 	}
 	if err := json.Unmarshal(body, &data); err != nil {
-		return errors.New("请求参数格式不合法,请核对参数格式")
+		if syntaxErr, ok := err.(*json.SyntaxError); ok {
+			return fmt.Errorf("JSON语法错误: 位置 %d, %s", syntaxErr.Offset, syntaxErr.Error())
+		}
+		if typeErr, ok := err.(*json.UnmarshalTypeError); ok {
+			return fmt.Errorf("字段 '%s' 类型错误: 期望 %s, 实际 %s", typeErr.Field, typeErr.Type, typeErr.Value)
+		}
+		return fmt.Errorf("请求参数格式不合法: %s", err.Error())
 	}
 	// 设置结构体字段的默认值
 	setDefaultValues(data)

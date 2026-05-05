@@ -8,9 +8,9 @@ import (
 
 // DBPoolConfig 数据库连接池配置
 type DBPoolConfig struct {
-	MaxOpenConns    int           `json:"max_open_conns" yaml:"max_open_conns"`       // 最大打开连接数，默认50
-	MaxIdleConns    int           `json:"max_idle_conns" yaml:"max_idle_conns"`       // 最大空闲连接数，默认25
-	ConnMaxLifetime time.Duration `json:"conn_max_lifetime" yaml:"conn_max_lifetime"` // 连接最大生命周期，默认30分钟
+	MaxOpenConns    int           `json:"max_open_conns" yaml:"max_open_conns"`         // 最大打开连接数，默认50
+	MaxIdleConns    int           `json:"max_idle_conns" yaml:"max_idle_conns"`         // 最大空闲连接数，默认25
+	ConnMaxLifetime time.Duration `json:"conn_max_lifetime" yaml:"conn_max_lifetime"`   // 连接最大生命周期，默认30分钟
 	ConnMaxIdleTime time.Duration `json:"conn_max_idle_time" yaml:"conn_max_idle_time"` // 空闲连接超时，默认10分钟
 }
 
@@ -29,8 +29,8 @@ type DBConfig struct {
 // 全局默认连接池配置
 var (
 	defaultPoolConfig = DBPoolConfig{
-		MaxOpenConns:    50,
-		MaxIdleConns:    25,
+		MaxOpenConns:    100, // 增加到100，支持更高并发
+		MaxIdleConns:    50,  // 增加到50，减少连接创建开销
 		ConnMaxLifetime: 30 * time.Minute,
 		ConnMaxIdleTime: 10 * time.Minute,
 	}
@@ -42,7 +42,7 @@ var (
 func SetDefaultPoolConfig(config DBPoolConfig) {
 	poolConfigMutex.Lock()
 	defer poolConfigMutex.Unlock()
-	
+
 	if config.MaxOpenConns > 0 {
 		defaultPoolConfig.MaxOpenConns = config.MaxOpenConns
 	}
@@ -84,13 +84,13 @@ func (c *DBConfig) GetTablePrefix() string {
 func (c *DBConfig) GetPoolConfig() DBPoolConfig {
 	pool := c.Pool
 	defaultConfig := GetDefaultPoolConfig()
-	
+
 	// 如果没有配置任何连接池参数，使用全局默认配置
-	if pool.MaxOpenConns <= 0 && pool.MaxIdleConns <= 0 && 
-	   pool.ConnMaxLifetime <= 0 && pool.ConnMaxIdleTime <= 0 {
+	if pool.MaxOpenConns <= 0 && pool.MaxIdleConns <= 0 &&
+		pool.ConnMaxLifetime <= 0 && pool.ConnMaxIdleTime <= 0 {
 		return defaultConfig
 	}
-	
+
 	// 部分配置使用默认值填充
 	if pool.MaxOpenConns <= 0 {
 		pool.MaxOpenConns = defaultConfig.MaxOpenConns
@@ -104,7 +104,7 @@ func (c *DBConfig) GetPoolConfig() DBPoolConfig {
 	if pool.ConnMaxIdleTime <= 0 {
 		pool.ConnMaxIdleTime = defaultConfig.ConnMaxIdleTime
 	}
-	
+
 	return pool
 }
 

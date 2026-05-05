@@ -19,7 +19,7 @@ type CacheConfig struct {
 
 var defaultCacheConfig = &CacheConfig{
 	Enabled:     true,
-	DefaultTTL:  15 * time.Minute,
+	DefaultTTL:  15 * time.Minute,  // 从5分钟增加到15分钟，减少数据库查询
 	Prefix:      "db_cache:",
 	CacheOnRead: true,
 }
