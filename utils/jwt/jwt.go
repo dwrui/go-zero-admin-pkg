@@ -24,6 +24,7 @@ var (
 type CustomClaims struct {
 	UserId     uint64                 `json:"user_id"`
 	BusinessId uint64                 `json:"business_id"`
+	DeptId     uint64                 `json:"dept_id"`
 	Data       map[string]interface{} `json:"data"`
 	jwt.RegisteredClaims
 }
@@ -35,6 +36,7 @@ func GenerateToken(config JwtConfig, data map[string]interface{}) (string, error
 	claims := CustomClaims{
 		UserId:     ga.Uint64(data["id"]),
 		BusinessId: ga.Uint64(data["business_id"]),
+		DeptId:     ga.Uint64(data["dept_id"]),
 		Data:       data,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(expireTime),

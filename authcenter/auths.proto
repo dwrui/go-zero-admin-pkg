@@ -1,0 +1,45 @@
+// 声明 proto 使用的语法版本
+syntax = "proto3";
+
+// proto 包名
+package auth;
+
+// golang 包名
+option go_package = "./auth";
+
+message CheckTokenRequest {
+  string token = 1;       // 令牌
+  string permission = 2;       // 权限
+}
+
+message CheckTokenResponse {
+  string new_token = 1;       // 新令牌
+}
+//获取用户数据权限
+message GetRoleUserIdRequest{
+  uint64 user_id = 1;       // 用户ID
+}
+message GetRoleUserIdResponse {
+  int64 access_type = 1;     // 数据权限类型：0=自己，1=部门，2=全部，3=自己及以下角色
+  repeated uint64 dept_id = 2;        // 部门ID（access_type=1时有值）
+  repeated uint64 user_ids = 3;       // 用户ID列表（access_type=0或3时有值，多个ID用逗号分隔，全部权限返回*）
+}
+
+message GetFieldAccessRequest{
+  uint64 user_id = 1;       // 用户ID
+  string table_name = 2;    // 表名
+}
+
+message GetFieldAccessResponse {
+  repeated string list_visible_fields = 1;  // 列表可见字段列表，["*"]表示全部字段
+  repeated string edit_visible_fields = 2;  // 表单可见字段列表
+  repeated string editable_fields = 3;      // 可编辑字段列表
+  repeated string readonly_fields = 4;      // 只读字段列表
+}
+
+
+service AuthService {
+  rpc CheckToken(CheckTokenRequest) returns (CheckTokenResponse);
+  rpc GetRoleUserId(GetRoleUserIdRequest) returns (GetRoleUserIdResponse);
+  rpc GetFieldAccess(GetFieldAccessRequest) returns (GetFieldAccessResponse);
+}

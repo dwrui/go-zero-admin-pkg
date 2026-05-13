@@ -63,7 +63,10 @@ func (mv *MessageValidator) SetFieldNames(names map[string]string) *MessageValid
 }
 func (mv *MessageValidator) Validate(data interface{}) error {
 	if err := mv.validator.Struct(data); err != nil {
-		return mv.convertValidationError(err.(validator.ValidationErrors), data)
+		if validationErrors, ok := err.(validator.ValidationErrors); ok {
+			return mv.convertValidationError(validationErrors, data)
+		}
+		return err
 	}
 	return nil
 }
@@ -71,7 +74,10 @@ func (mv *MessageValidator) Validate(data interface{}) error {
 // ValidateOne 验证结构体，只返回第一个错误
 func (mv *MessageValidator) ValidateOne(data interface{}) error {
 	if err := mv.validator.Struct(data); err != nil {
-		return mv.convertFirstValidationError(err.(validator.ValidationErrors), data)
+		if validationErrors, ok := err.(validator.ValidationErrors); ok {
+			return mv.convertFirstValidationError(validationErrors, data)
+		}
+		return err
 	}
 	return nil
 }
@@ -79,7 +85,10 @@ func (mv *MessageValidator) ValidateOne(data interface{}) error {
 // ValidateAll 验证结构体，返回所有错误信息
 func (mv *MessageValidator) ValidateAll(data interface{}) []error {
 	if err := mv.validator.Struct(data); err != nil {
-		return mv.convertAllValidationErrors(err.(validator.ValidationErrors), data)
+		if validationErrors, ok := err.(validator.ValidationErrors); ok {
+			return mv.convertAllValidationErrors(validationErrors, data)
+		}
+		return []error{err}
 	}
 	return nil
 }
@@ -87,7 +96,10 @@ func (mv *MessageValidator) ValidateAll(data interface{}) []error {
 // ValidateMap 验证结构体，返回字段名到错误信息的映射
 func (mv *MessageValidator) ValidateMap(data interface{}) map[string]string {
 	if err := mv.validator.Struct(data); err != nil {
-		return mv.convertValidationErrorMap(err.(validator.ValidationErrors), data)
+		if validationErrors, ok := err.(validator.ValidationErrors); ok {
+			return mv.convertValidationErrorMap(validationErrors, data)
+		}
+		return map[string]string{"error": err.Error()}
 	}
 	return make(map[string]string)
 }
@@ -95,7 +107,10 @@ func (mv *MessageValidator) ValidateMap(data interface{}) map[string]string {
 // ValidateVar 验证单个变量
 func (mv *MessageValidator) ValidateVar(field interface{}, tag string, fieldName string) error {
 	if err := mv.validator.Var(field, tag); err != nil {
-		return mv.convertSingleError(err.(validator.ValidationErrors), fieldName, tag)
+		if validationErrors, ok := err.(validator.ValidationErrors); ok {
+			return mv.convertSingleError(validationErrors, fieldName, tag)
+		}
+		return err
 	}
 	return nil
 }
@@ -133,7 +148,6 @@ func (mv *MessageValidator) convertFirstValidationError(errs validator.Validatio
 	if len(errs) == 0 {
 		return nil
 	}
-
 	// 只处理第一个错误
 	err := errs[0]
 	fieldName := err.Field()
@@ -420,6 +434,11 @@ func registerCustomRules(v *validator.Validate) {
 	// 手机号验证（中国）
 	v.RegisterValidation("chinaMobile", func(fl validator.FieldLevel) bool {
 		return regexp.MustCompile(`^1[3-9]\d{9}$`).MatchString(fl.Field().String())
+	})
+
+	// 银行账号验证（16-19位数字）
+	v.RegisterValidation("bankAccount", func(fl validator.FieldLevel) bool {
+		return regexp.MustCompile(`^\d{16,19}$`).MatchString(fl.Field().String())
 	})
 
 	// 密码强度验证（必须包含字母和数字）
