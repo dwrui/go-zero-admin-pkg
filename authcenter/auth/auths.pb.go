@@ -121,111 +121,6 @@ func (x *CheckTokenResponse) GetNewToken() string {
 	return ""
 }
 
-// 获取用户数据权限
-type GetRoleUserIdRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	UserId        uint64                 `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"` // 用户ID
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetRoleUserIdRequest) Reset() {
-	*x = GetRoleUserIdRequest{}
-	mi := &file_auths_proto_msgTypes[2]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetRoleUserIdRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetRoleUserIdRequest) ProtoMessage() {}
-
-func (x *GetRoleUserIdRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_auths_proto_msgTypes[2]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetRoleUserIdRequest.ProtoReflect.Descriptor instead.
-func (*GetRoleUserIdRequest) Descriptor() ([]byte, []int) {
-	return file_auths_proto_rawDescGZIP(), []int{2}
-}
-
-func (x *GetRoleUserIdRequest) GetUserId() uint64 {
-	if x != nil {
-		return x.UserId
-	}
-	return 0
-}
-
-type GetRoleUserIdResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	AccessType    int64                  `protobuf:"varint,1,opt,name=access_type,json=accessType,proto3" json:"access_type,omitempty"` // 数据权限类型：0=自己，1=部门，2=全部，3=自己及以下角色
-	DeptId        []uint64               `protobuf:"varint,2,rep,packed,name=dept_id,json=deptId,proto3" json:"dept_id,omitempty"`      // 部门ID（access_type=1时有值）
-	UserIds       []uint64               `protobuf:"varint,3,rep,packed,name=user_ids,json=userIds,proto3" json:"user_ids,omitempty"`   // 用户ID列表（access_type=0或3时有值，多个ID用逗号分隔，全部权限返回*）
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetRoleUserIdResponse) Reset() {
-	*x = GetRoleUserIdResponse{}
-	mi := &file_auths_proto_msgTypes[3]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetRoleUserIdResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetRoleUserIdResponse) ProtoMessage() {}
-
-func (x *GetRoleUserIdResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_auths_proto_msgTypes[3]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetRoleUserIdResponse.ProtoReflect.Descriptor instead.
-func (*GetRoleUserIdResponse) Descriptor() ([]byte, []int) {
-	return file_auths_proto_rawDescGZIP(), []int{3}
-}
-
-func (x *GetRoleUserIdResponse) GetAccessType() int64 {
-	if x != nil {
-		return x.AccessType
-	}
-	return 0
-}
-
-func (x *GetRoleUserIdResponse) GetDeptId() []uint64 {
-	if x != nil {
-		return x.DeptId
-	}
-	return nil
-}
-
-func (x *GetRoleUserIdResponse) GetUserIds() []uint64 {
-	if x != nil {
-		return x.UserIds
-	}
-	return nil
-}
-
 type GetFieldAccessRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	UserId        uint64                 `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`         // 用户ID
@@ -236,7 +131,7 @@ type GetFieldAccessRequest struct {
 
 func (x *GetFieldAccessRequest) Reset() {
 	*x = GetFieldAccessRequest{}
-	mi := &file_auths_proto_msgTypes[4]
+	mi := &file_auths_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -248,7 +143,7 @@ func (x *GetFieldAccessRequest) String() string {
 func (*GetFieldAccessRequest) ProtoMessage() {}
 
 func (x *GetFieldAccessRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_auths_proto_msgTypes[4]
+	mi := &file_auths_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -261,7 +156,7 @@ func (x *GetFieldAccessRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetFieldAccessRequest.ProtoReflect.Descriptor instead.
 func (*GetFieldAccessRequest) Descriptor() ([]byte, []int) {
-	return file_auths_proto_rawDescGZIP(), []int{4}
+	return file_auths_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *GetFieldAccessRequest) GetUserId() uint64 {
@@ -284,13 +179,14 @@ type GetFieldAccessResponse struct {
 	EditVisibleFields []string               `protobuf:"bytes,2,rep,name=edit_visible_fields,json=editVisibleFields,proto3" json:"edit_visible_fields,omitempty"` // 表单可见字段列表
 	EditableFields    []string               `protobuf:"bytes,3,rep,name=editable_fields,json=editableFields,proto3" json:"editable_fields,omitempty"`            // 可编辑字段列表
 	ReadonlyFields    []string               `protobuf:"bytes,4,rep,name=readonly_fields,json=readonlyFields,proto3" json:"readonly_fields,omitempty"`            // 只读字段列表
+	ViewVisibleFields []string               `protobuf:"bytes,5,rep,name=view_visible_fields,json=viewVisibleFields,proto3" json:"view_visible_fields,omitempty"` // 查看详情可见字段列表
 	unknownFields     protoimpl.UnknownFields
 	sizeCache         protoimpl.SizeCache
 }
 
 func (x *GetFieldAccessResponse) Reset() {
 	*x = GetFieldAccessResponse{}
-	mi := &file_auths_proto_msgTypes[5]
+	mi := &file_auths_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -302,7 +198,7 @@ func (x *GetFieldAccessResponse) String() string {
 func (*GetFieldAccessResponse) ProtoMessage() {}
 
 func (x *GetFieldAccessResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_auths_proto_msgTypes[5]
+	mi := &file_auths_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -315,7 +211,7 @@ func (x *GetFieldAccessResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetFieldAccessResponse.ProtoReflect.Descriptor instead.
 func (*GetFieldAccessResponse) Descriptor() ([]byte, []int) {
-	return file_auths_proto_rawDescGZIP(), []int{5}
+	return file_auths_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *GetFieldAccessResponse) GetListVisibleFields() []string {
@@ -346,6 +242,193 @@ func (x *GetFieldAccessResponse) GetReadonlyFields() []string {
 	return nil
 }
 
+func (x *GetFieldAccessResponse) GetViewVisibleFields() []string {
+	if x != nil {
+		return x.ViewVisibleFields
+	}
+	return nil
+}
+
+type GetUserPermissionRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	UserId        uint64                 `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`         // 用户ID
+	TableName     string                 `protobuf:"bytes,2,opt,name=table_name,json=tableName,proto3" json:"table_name,omitempty"` // 表名（可选，不传则不返回字段权限）
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetUserPermissionRequest) Reset() {
+	*x = GetUserPermissionRequest{}
+	mi := &file_auths_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetUserPermissionRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetUserPermissionRequest) ProtoMessage() {}
+
+func (x *GetUserPermissionRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_auths_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetUserPermissionRequest.ProtoReflect.Descriptor instead.
+func (*GetUserPermissionRequest) Descriptor() ([]byte, []int) {
+	return file_auths_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *GetUserPermissionRequest) GetUserId() uint64 {
+	if x != nil {
+		return x.UserId
+	}
+	return 0
+}
+
+func (x *GetUserPermissionRequest) GetTableName() string {
+	if x != nil {
+		return x.TableName
+	}
+	return ""
+}
+
+type FieldPermission struct {
+	state             protoimpl.MessageState `protogen:"open.v1"`
+	ListVisibleFields []string               `protobuf:"bytes,1,rep,name=list_visible_fields,json=listVisibleFields,proto3" json:"list_visible_fields,omitempty"` // 列表可见字段列表
+	EditVisibleFields []string               `protobuf:"bytes,2,rep,name=edit_visible_fields,json=editVisibleFields,proto3" json:"edit_visible_fields,omitempty"` // 表单可见字段列表
+	ViewVisibleFields []string               `protobuf:"bytes,3,rep,name=view_visible_fields,json=viewVisibleFields,proto3" json:"view_visible_fields,omitempty"` // 查看详情可见字段列表
+	unknownFields     protoimpl.UnknownFields
+	sizeCache         protoimpl.SizeCache
+}
+
+func (x *FieldPermission) Reset() {
+	*x = FieldPermission{}
+	mi := &file_auths_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *FieldPermission) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*FieldPermission) ProtoMessage() {}
+
+func (x *FieldPermission) ProtoReflect() protoreflect.Message {
+	mi := &file_auths_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use FieldPermission.ProtoReflect.Descriptor instead.
+func (*FieldPermission) Descriptor() ([]byte, []int) {
+	return file_auths_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *FieldPermission) GetListVisibleFields() []string {
+	if x != nil {
+		return x.ListVisibleFields
+	}
+	return nil
+}
+
+func (x *FieldPermission) GetEditVisibleFields() []string {
+	if x != nil {
+		return x.EditVisibleFields
+	}
+	return nil
+}
+
+func (x *FieldPermission) GetViewVisibleFields() []string {
+	if x != nil {
+		return x.ViewVisibleFields
+	}
+	return nil
+}
+
+type GetUserPermissionResponse struct {
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	AccessType      int64                  `protobuf:"varint,1,opt,name=access_type,json=accessType,proto3" json:"access_type,omitempty"`               // 数据权限类型：0=自己，1=部门，2=全部，3=自己及以下角色
+	DeptId          []uint64               `protobuf:"varint,2,rep,packed,name=dept_id,json=deptId,proto3" json:"dept_id,omitempty"`                    // 部门ID
+	UserIds         []uint64               `protobuf:"varint,3,rep,packed,name=user_ids,json=userIds,proto3" json:"user_ids,omitempty"`                 // 用户ID列表
+	FieldPermission *FieldPermission       `protobuf:"bytes,4,opt,name=field_permission,json=fieldPermission,proto3" json:"field_permission,omitempty"` // 字段权限
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
+}
+
+func (x *GetUserPermissionResponse) Reset() {
+	*x = GetUserPermissionResponse{}
+	mi := &file_auths_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetUserPermissionResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetUserPermissionResponse) ProtoMessage() {}
+
+func (x *GetUserPermissionResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_auths_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetUserPermissionResponse.ProtoReflect.Descriptor instead.
+func (*GetUserPermissionResponse) Descriptor() ([]byte, []int) {
+	return file_auths_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *GetUserPermissionResponse) GetAccessType() int64 {
+	if x != nil {
+		return x.AccessType
+	}
+	return 0
+}
+
+func (x *GetUserPermissionResponse) GetDeptId() []uint64 {
+	if x != nil {
+		return x.DeptId
+	}
+	return nil
+}
+
+func (x *GetUserPermissionResponse) GetUserIds() []uint64 {
+	if x != nil {
+		return x.UserIds
+	}
+	return nil
+}
+
+func (x *GetUserPermissionResponse) GetFieldPermission() *FieldPermission {
+	if x != nil {
+		return x.FieldPermission
+	}
+	return nil
+}
+
 var File_auths_proto protoreflect.FileDescriptor
 
 const file_auths_proto_rawDesc = "" +
@@ -357,28 +440,36 @@ const file_auths_proto_rawDesc = "" +
 	"permission\x18\x02 \x01(\tR\n" +
 	"permission\"1\n" +
 	"\x12CheckTokenResponse\x12\x1b\n" +
-	"\tnew_token\x18\x01 \x01(\tR\bnewToken\"/\n" +
-	"\x14GetRoleUserIdRequest\x12\x17\n" +
-	"\auser_id\x18\x01 \x01(\x04R\x06userId\"l\n" +
-	"\x15GetRoleUserIdResponse\x12\x1f\n" +
-	"\vaccess_type\x18\x01 \x01(\x03R\n" +
-	"accessType\x12\x17\n" +
-	"\adept_id\x18\x02 \x03(\x04R\x06deptId\x12\x19\n" +
-	"\buser_ids\x18\x03 \x03(\x04R\auserIds\"O\n" +
+	"\tnew_token\x18\x01 \x01(\tR\bnewToken\"O\n" +
 	"\x15GetFieldAccessRequest\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\x04R\x06userId\x12\x1d\n" +
 	"\n" +
-	"table_name\x18\x02 \x01(\tR\ttableName\"\xca\x01\n" +
+	"table_name\x18\x02 \x01(\tR\ttableName\"\xfa\x01\n" +
 	"\x16GetFieldAccessResponse\x12.\n" +
 	"\x13list_visible_fields\x18\x01 \x03(\tR\x11listVisibleFields\x12.\n" +
 	"\x13edit_visible_fields\x18\x02 \x03(\tR\x11editVisibleFields\x12'\n" +
 	"\x0feditable_fields\x18\x03 \x03(\tR\x0eeditableFields\x12'\n" +
-	"\x0freadonly_fields\x18\x04 \x03(\tR\x0ereadonlyFields2\xe5\x01\n" +
+	"\x0freadonly_fields\x18\x04 \x03(\tR\x0ereadonlyFields\x12.\n" +
+	"\x13view_visible_fields\x18\x05 \x03(\tR\x11viewVisibleFields\"R\n" +
+	"\x18GetUserPermissionRequest\x12\x17\n" +
+	"\auser_id\x18\x01 \x01(\x04R\x06userId\x12\x1d\n" +
+	"\n" +
+	"table_name\x18\x02 \x01(\tR\ttableName\"\xa1\x01\n" +
+	"\x0fFieldPermission\x12.\n" +
+	"\x13list_visible_fields\x18\x01 \x03(\tR\x11listVisibleFields\x12.\n" +
+	"\x13edit_visible_fields\x18\x02 \x03(\tR\x11editVisibleFields\x12.\n" +
+	"\x13view_visible_fields\x18\x03 \x03(\tR\x11viewVisibleFields\"\xb2\x01\n" +
+	"\x19GetUserPermissionResponse\x12\x1f\n" +
+	"\vaccess_type\x18\x01 \x01(\x03R\n" +
+	"accessType\x12\x17\n" +
+	"\adept_id\x18\x02 \x03(\x04R\x06deptId\x12\x19\n" +
+	"\buser_ids\x18\x03 \x03(\x04R\auserIds\x12@\n" +
+	"\x10field_permission\x18\x04 \x01(\v2\x15.auth.FieldPermissionR\x0ffieldPermission2\xf1\x01\n" +
 	"\vAuthService\x12?\n" +
 	"\n" +
-	"CheckToken\x12\x17.auth.CheckTokenRequest\x1a\x18.auth.CheckTokenResponse\x12H\n" +
-	"\rGetRoleUserId\x12\x1a.auth.GetRoleUserIdRequest\x1a\x1b.auth.GetRoleUserIdResponse\x12K\n" +
-	"\x0eGetFieldAccess\x12\x1b.auth.GetFieldAccessRequest\x1a\x1c.auth.GetFieldAccessResponseB\bZ\x06./authb\x06proto3"
+	"CheckToken\x12\x17.auth.CheckTokenRequest\x1a\x18.auth.CheckTokenResponse\x12K\n" +
+	"\x0eGetFieldAccess\x12\x1b.auth.GetFieldAccessRequest\x1a\x1c.auth.GetFieldAccessResponse\x12T\n" +
+	"\x11GetUserPermission\x12\x1e.auth.GetUserPermissionRequest\x1a\x1f.auth.GetUserPermissionResponseB\bZ\x06./authb\x06proto3"
 
 var (
 	file_auths_proto_rawDescOnce sync.Once
@@ -392,27 +483,29 @@ func file_auths_proto_rawDescGZIP() []byte {
 	return file_auths_proto_rawDescData
 }
 
-var file_auths_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
+var file_auths_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
 var file_auths_proto_goTypes = []any{
-	(*CheckTokenRequest)(nil),      // 0: auth.CheckTokenRequest
-	(*CheckTokenResponse)(nil),     // 1: auth.CheckTokenResponse
-	(*GetRoleUserIdRequest)(nil),   // 2: auth.GetRoleUserIdRequest
-	(*GetRoleUserIdResponse)(nil),  // 3: auth.GetRoleUserIdResponse
-	(*GetFieldAccessRequest)(nil),  // 4: auth.GetFieldAccessRequest
-	(*GetFieldAccessResponse)(nil), // 5: auth.GetFieldAccessResponse
+	(*CheckTokenRequest)(nil),         // 0: auth.CheckTokenRequest
+	(*CheckTokenResponse)(nil),        // 1: auth.CheckTokenResponse
+	(*GetFieldAccessRequest)(nil),     // 2: auth.GetFieldAccessRequest
+	(*GetFieldAccessResponse)(nil),    // 3: auth.GetFieldAccessResponse
+	(*GetUserPermissionRequest)(nil),  // 4: auth.GetUserPermissionRequest
+	(*FieldPermission)(nil),           // 5: auth.FieldPermission
+	(*GetUserPermissionResponse)(nil), // 6: auth.GetUserPermissionResponse
 }
 var file_auths_proto_depIdxs = []int32{
-	0, // 0: auth.AuthService.CheckToken:input_type -> auth.CheckTokenRequest
-	2, // 1: auth.AuthService.GetRoleUserId:input_type -> auth.GetRoleUserIdRequest
-	4, // 2: auth.AuthService.GetFieldAccess:input_type -> auth.GetFieldAccessRequest
-	1, // 3: auth.AuthService.CheckToken:output_type -> auth.CheckTokenResponse
-	3, // 4: auth.AuthService.GetRoleUserId:output_type -> auth.GetRoleUserIdResponse
-	5, // 5: auth.AuthService.GetFieldAccess:output_type -> auth.GetFieldAccessResponse
-	3, // [3:6] is the sub-list for method output_type
-	0, // [0:3] is the sub-list for method input_type
-	0, // [0:0] is the sub-list for extension type_name
-	0, // [0:0] is the sub-list for extension extendee
-	0, // [0:0] is the sub-list for field type_name
+	5, // 0: auth.GetUserPermissionResponse.field_permission:type_name -> auth.FieldPermission
+	0, // 1: auth.AuthService.CheckToken:input_type -> auth.CheckTokenRequest
+	2, // 2: auth.AuthService.GetFieldAccess:input_type -> auth.GetFieldAccessRequest
+	4, // 3: auth.AuthService.GetUserPermission:input_type -> auth.GetUserPermissionRequest
+	1, // 4: auth.AuthService.CheckToken:output_type -> auth.CheckTokenResponse
+	3, // 5: auth.AuthService.GetFieldAccess:output_type -> auth.GetFieldAccessResponse
+	6, // 6: auth.AuthService.GetUserPermission:output_type -> auth.GetUserPermissionResponse
+	4, // [4:7] is the sub-list for method output_type
+	1, // [1:4] is the sub-list for method input_type
+	1, // [1:1] is the sub-list for extension type_name
+	1, // [1:1] is the sub-list for extension extendee
+	0, // [0:1] is the sub-list for field type_name
 }
 
 func init() { file_auths_proto_init() }
@@ -426,7 +519,7 @@ func file_auths_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_auths_proto_rawDesc), len(file_auths_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   6,
+			NumMessages:   7,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

@@ -1,6 +1,7 @@
 package ga
 
 import (
+	"database/sql"
 	"fmt"
 	"reflect"
 
@@ -135,4 +136,28 @@ func GetFullUrl(url string) string {
 		return "/common/" + url
 	}
 	return url
+}
+
+// 非空 → 返回 "2006-01-02"
+func FormatNullDate(nt sql.NullTime) string {
+	if nt.Valid {
+		return nt.Time.Format("2006-01-02")
+	}
+	return ""
+}
+
+// 如果你需要 datetime 格式：
+func FormatNullTime(nt sql.NullTime) string {
+	if nt.Valid {
+		return nt.Time.Format("2006-01-02 15:04:05")
+	}
+	return ""
+}
+
+// 如果你需要 datetime 格式：
+func FormatNullDateTime(nt sql.NullTime) string {
+	if nt.Valid {
+		return nt.Time.Format("2006-01-02 15:04")
+	}
+	return ""
 }

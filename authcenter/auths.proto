@@ -15,15 +15,6 @@ message CheckTokenRequest {
 message CheckTokenResponse {
   string new_token = 1;       // 新令牌
 }
-//获取用户数据权限
-message GetRoleUserIdRequest{
-  uint64 user_id = 1;       // 用户ID
-}
-message GetRoleUserIdResponse {
-  int64 access_type = 1;     // 数据权限类型：0=自己，1=部门，2=全部，3=自己及以下角色
-  repeated uint64 dept_id = 2;        // 部门ID（access_type=1时有值）
-  repeated uint64 user_ids = 3;       // 用户ID列表（access_type=0或3时有值，多个ID用逗号分隔，全部权限返回*）
-}
 
 message GetFieldAccessRequest{
   uint64 user_id = 1;       // 用户ID
@@ -35,11 +26,30 @@ message GetFieldAccessResponse {
   repeated string edit_visible_fields = 2;  // 表单可见字段列表
   repeated string editable_fields = 3;      // 可编辑字段列表
   repeated string readonly_fields = 4;      // 只读字段列表
+  repeated string view_visible_fields = 5;  // 查看详情可见字段列表
+}
+
+message GetUserPermissionRequest {
+  uint64 user_id = 1;       // 用户ID
+  string table_name = 2;    // 表名（可选，不传则不返回字段权限）
+}
+
+message FieldPermission {
+  repeated string list_visible_fields = 1;  // 列表可见字段列表
+  repeated string edit_visible_fields = 2;  // 表单可见字段列表
+  repeated string view_visible_fields = 3;  // 查看详情可见字段列表
+}
+
+message GetUserPermissionResponse {
+  int64 access_type = 1;                     // 数据权限类型：0=自己，1=部门，2=全部，3=自己及以下角色
+  repeated uint64 dept_id = 2;               // 部门ID
+  repeated uint64 user_ids = 3;              // 用户ID列表
+  FieldPermission field_permission = 4;      // 字段权限
 }
 
 
 service AuthService {
   rpc CheckToken(CheckTokenRequest) returns (CheckTokenResponse);
-  rpc GetRoleUserId(GetRoleUserIdRequest) returns (GetRoleUserIdResponse);
   rpc GetFieldAccess(GetFieldAccessRequest) returns (GetFieldAccessResponse);
+  rpc GetUserPermission(GetUserPermissionRequest) returns (GetUserPermissionResponse);
 }

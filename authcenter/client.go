@@ -93,6 +93,17 @@ func (c *AuthClient) GetFieldAccess(ctx context.Context, userId uint64, tableNam
 	return resp, nil
 }
 
+func (c *AuthClient) GetUserPermission(ctx context.Context, userId uint64, tableName string) (*auth.GetUserPermissionResponse, error) {
+	resp, err := c.client.GetUserPermission(ctx, &auth.GetUserPermissionRequest{
+		UserId:    userId,
+		TableName: tableName,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return resp, nil
+}
+
 func (c *AuthClient) RawClient() auth.AuthServiceClient {
 	return c.client
 }
@@ -107,4 +118,8 @@ func GetRoleUserId(ctx context.Context, userId uint64) (*auth.GetRoleUserIdRespo
 
 func GetFieldAccess(ctx context.Context, userId uint64, tableName string) (*auth.GetFieldAccessResponse, error) {
 	return GetClient().GetFieldAccess(ctx, userId, tableName)
+}
+
+func GetUserPermission(ctx context.Context, userId uint64, tableName string) (*auth.GetUserPermissionResponse, error) {
+	return GetClient().GetUserPermission(ctx, userId, tableName)
 }

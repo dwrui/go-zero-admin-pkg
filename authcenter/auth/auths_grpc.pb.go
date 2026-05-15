@@ -23,9 +23,9 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	AuthService_CheckToken_FullMethodName     = "/auth.AuthService/CheckToken"
-	AuthService_GetRoleUserId_FullMethodName  = "/auth.AuthService/GetRoleUserId"
-	AuthService_GetFieldAccess_FullMethodName = "/auth.AuthService/GetFieldAccess"
+	AuthService_CheckToken_FullMethodName        = "/auth.AuthService/CheckToken"
+	AuthService_GetFieldAccess_FullMethodName    = "/auth.AuthService/GetFieldAccess"
+	AuthService_GetUserPermission_FullMethodName = "/auth.AuthService/GetUserPermission"
 )
 
 // AuthServiceClient is the client API for AuthService service.
@@ -33,8 +33,8 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type AuthServiceClient interface {
 	CheckToken(ctx context.Context, in *CheckTokenRequest, opts ...grpc.CallOption) (*CheckTokenResponse, error)
-	GetRoleUserId(ctx context.Context, in *GetRoleUserIdRequest, opts ...grpc.CallOption) (*GetRoleUserIdResponse, error)
 	GetFieldAccess(ctx context.Context, in *GetFieldAccessRequest, opts ...grpc.CallOption) (*GetFieldAccessResponse, error)
+	GetUserPermission(ctx context.Context, in *GetUserPermissionRequest, opts ...grpc.CallOption) (*GetUserPermissionResponse, error)
 }
 
 type authServiceClient struct {
@@ -55,20 +55,20 @@ func (c *authServiceClient) CheckToken(ctx context.Context, in *CheckTokenReques
 	return out, nil
 }
 
-func (c *authServiceClient) GetRoleUserId(ctx context.Context, in *GetRoleUserIdRequest, opts ...grpc.CallOption) (*GetRoleUserIdResponse, error) {
+func (c *authServiceClient) GetFieldAccess(ctx context.Context, in *GetFieldAccessRequest, opts ...grpc.CallOption) (*GetFieldAccessResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(GetRoleUserIdResponse)
-	err := c.cc.Invoke(ctx, AuthService_GetRoleUserId_FullMethodName, in, out, cOpts...)
+	out := new(GetFieldAccessResponse)
+	err := c.cc.Invoke(ctx, AuthService_GetFieldAccess_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *authServiceClient) GetFieldAccess(ctx context.Context, in *GetFieldAccessRequest, opts ...grpc.CallOption) (*GetFieldAccessResponse, error) {
+func (c *authServiceClient) GetUserPermission(ctx context.Context, in *GetUserPermissionRequest, opts ...grpc.CallOption) (*GetUserPermissionResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(GetFieldAccessResponse)
-	err := c.cc.Invoke(ctx, AuthService_GetFieldAccess_FullMethodName, in, out, cOpts...)
+	out := new(GetUserPermissionResponse)
+	err := c.cc.Invoke(ctx, AuthService_GetUserPermission_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -80,8 +80,8 @@ func (c *authServiceClient) GetFieldAccess(ctx context.Context, in *GetFieldAcce
 // for forward compatibility.
 type AuthServiceServer interface {
 	CheckToken(context.Context, *CheckTokenRequest) (*CheckTokenResponse, error)
-	GetRoleUserId(context.Context, *GetRoleUserIdRequest) (*GetRoleUserIdResponse, error)
 	GetFieldAccess(context.Context, *GetFieldAccessRequest) (*GetFieldAccessResponse, error)
+	GetUserPermission(context.Context, *GetUserPermissionRequest) (*GetUserPermissionResponse, error)
 	mustEmbedUnimplementedAuthServiceServer()
 }
 
@@ -95,11 +95,11 @@ type UnimplementedAuthServiceServer struct{}
 func (UnimplementedAuthServiceServer) CheckToken(context.Context, *CheckTokenRequest) (*CheckTokenResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method CheckToken not implemented")
 }
-func (UnimplementedAuthServiceServer) GetRoleUserId(context.Context, *GetRoleUserIdRequest) (*GetRoleUserIdResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method GetRoleUserId not implemented")
-}
 func (UnimplementedAuthServiceServer) GetFieldAccess(context.Context, *GetFieldAccessRequest) (*GetFieldAccessResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetFieldAccess not implemented")
+}
+func (UnimplementedAuthServiceServer) GetUserPermission(context.Context, *GetUserPermissionRequest) (*GetUserPermissionResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetUserPermission not implemented")
 }
 func (UnimplementedAuthServiceServer) mustEmbedUnimplementedAuthServiceServer() {}
 func (UnimplementedAuthServiceServer) testEmbeddedByValue()                     {}
@@ -140,24 +140,6 @@ func _AuthService_CheckToken_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
-func _AuthService_GetRoleUserId_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetRoleUserIdRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(AuthServiceServer).GetRoleUserId(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: AuthService_GetRoleUserId_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AuthServiceServer).GetRoleUserId(ctx, req.(*GetRoleUserIdRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _AuthService_GetFieldAccess_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetFieldAccessRequest)
 	if err := dec(in); err != nil {
@@ -176,6 +158,24 @@ func _AuthService_GetFieldAccess_Handler(srv interface{}, ctx context.Context, d
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AuthService_GetUserPermission_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetUserPermissionRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthServiceServer).GetUserPermission(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AuthService_GetUserPermission_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServiceServer).GetUserPermission(ctx, req.(*GetUserPermissionRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // AuthService_ServiceDesc is the grpc.ServiceDesc for AuthService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -188,12 +188,12 @@ var AuthService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _AuthService_CheckToken_Handler,
 		},
 		{
-			MethodName: "GetRoleUserId",
-			Handler:    _AuthService_GetRoleUserId_Handler,
-		},
-		{
 			MethodName: "GetFieldAccess",
 			Handler:    _AuthService_GetFieldAccess_Handler,
+		},
+		{
+			MethodName: "GetUserPermission",
+			Handler:    _AuthService_GetUserPermission_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
