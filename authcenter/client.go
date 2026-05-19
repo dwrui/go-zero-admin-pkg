@@ -72,16 +72,6 @@ func (c *AuthClient) CheckToken(ctx context.Context, token string, permission st
 	return resp.GetNewToken(), nil
 }
 
-func (c *AuthClient) GetRoleUserId(ctx context.Context, userId uint64) (*auth.GetRoleUserIdResponse, error) {
-	resp, err := c.client.GetRoleUserId(ctx, &auth.GetRoleUserIdRequest{
-		UserId: userId,
-	})
-	if err != nil {
-		return nil, err
-	}
-	return resp, nil
-}
-
 func (c *AuthClient) GetFieldAccess(ctx context.Context, userId uint64, tableName string) (*auth.GetFieldAccessResponse, error) {
 	resp, err := c.client.GetFieldAccess(ctx, &auth.GetFieldAccessRequest{
 		UserId:    userId,
@@ -110,10 +100,6 @@ func (c *AuthClient) RawClient() auth.AuthServiceClient {
 
 func CheckToken(ctx context.Context, token string, permission string) (string, error) {
 	return GetClient().CheckToken(ctx, token, permission)
-}
-
-func GetRoleUserId(ctx context.Context, userId uint64) (*auth.GetRoleUserIdResponse, error) {
-	return GetClient().GetRoleUserId(ctx, userId)
 }
 
 func GetFieldAccess(ctx context.Context, userId uint64, tableName string) (*auth.GetFieldAccessResponse, error) {
