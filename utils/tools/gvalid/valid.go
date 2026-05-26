@@ -2,11 +2,12 @@ package gvalid
 
 import (
 	"fmt"
-	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gerror"
-	"github.com/go-playground/validator/v10"
 	"reflect"
 	"regexp"
 	"strings"
+
+	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gerror"
+	"github.com/go-playground/validator/v10"
 )
 
 // MessageValidator 支持自定义错误消息的验证器
@@ -61,56 +62,81 @@ func (mv *MessageValidator) SetFieldNames(names map[string]string) *MessageValid
 	mv.fieldNames = names
 	return mv
 }
-func (mv *MessageValidator) Validate(data interface{}) error {
-	if err := mv.validator.Struct(data); err != nil {
+func (mv *MessageValidator) Validate(data interface{}) (err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			err = gerror.New(fmt.Sprintf("验证规则配置错误: %v", r))
+		}
+	}()
+	if err = mv.validator.Struct(data); err != nil {
 		if validationErrors, ok := err.(validator.ValidationErrors); ok {
 			return mv.convertValidationError(validationErrors, data)
 		}
-		return err
+		return gerror.New(fmt.Sprintf("验证失败: %s", err.Error()))
 	}
 	return nil
 }
 
 // ValidateOne 验证结构体，只返回第一个错误
-func (mv *MessageValidator) ValidateOne(data interface{}) error {
-	if err := mv.validator.Struct(data); err != nil {
+func (mv *MessageValidator) ValidateOne(data interface{}) (err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			err = gerror.New(fmt.Sprintf("验证规则配置错误: %v", r))
+		}
+	}()
+	if err = mv.validator.Struct(data); err != nil {
 		if validationErrors, ok := err.(validator.ValidationErrors); ok {
 			return mv.convertFirstValidationError(validationErrors, data)
 		}
-		return err
+		return gerror.New(fmt.Sprintf("验证失败: %s", err.Error()))
 	}
 	return nil
 }
 
 // ValidateAll 验证结构体，返回所有错误信息
-func (mv *MessageValidator) ValidateAll(data interface{}) []error {
+func (mv *MessageValidator) ValidateAll(data interface{}) (errors []error) {
+	defer func() {
+		if r := recover(); r != nil {
+			errors = []error{gerror.New(fmt.Sprintf("验证规则配置错误: %v", r))}
+		}
+	}()
 	if err := mv.validator.Struct(data); err != nil {
 		if validationErrors, ok := err.(validator.ValidationErrors); ok {
 			return mv.convertAllValidationErrors(validationErrors, data)
 		}
-		return []error{err}
+		return []error{gerror.New(fmt.Sprintf("验证失败: %s", err.Error()))}
 	}
 	return nil
 }
 
 // ValidateMap 验证结构体，返回字段名到错误信息的映射
-func (mv *MessageValidator) ValidateMap(data interface{}) map[string]string {
+func (mv *MessageValidator) ValidateMap(data interface{}) (result map[string]string) {
+	defer func() {
+		if r := recover(); r != nil {
+			result = map[string]string{"error": fmt.Sprintf("验证规则配置错误: %v", r)}
+		}
+	}()
 	if err := mv.validator.Struct(data); err != nil {
 		if validationErrors, ok := err.(validator.ValidationErrors); ok {
 			return mv.convertValidationErrorMap(validationErrors, data)
 		}
-		return map[string]string{"error": err.Error()}
+		return map[string]string{"error": fmt.Sprintf("验证失败: %s", err.Error())}
 	}
 	return make(map[string]string)
 }
 
 // ValidateVar 验证单个变量
-func (mv *MessageValidator) ValidateVar(field interface{}, tag string, fieldName string) error {
-	if err := mv.validator.Var(field, tag); err != nil {
+func (mv *MessageValidator) ValidateVar(field interface{}, tag string, fieldName string) (err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			err = gerror.New(fmt.Sprintf("验证规则配置错误: %v", r))
+		}
+	}()
+	if err = mv.validator.Var(field, tag); err != nil {
 		if validationErrors, ok := err.(validator.ValidationErrors); ok {
 			return mv.convertSingleError(validationErrors, fieldName, tag)
 		}
-		return err
+		return gerror.New(fmt.Sprintf("验证失败: %s", err.Error()))
 	}
 	return nil
 }
