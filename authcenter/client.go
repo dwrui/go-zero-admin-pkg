@@ -83,10 +83,11 @@ func (c *AuthClient) GetFieldAccess(ctx context.Context, userId uint64, tableNam
 	return resp, nil
 }
 
-func (c *AuthClient) GetUserPermission(ctx context.Context, userId uint64, tableName string) (*auth.GetUserPermissionResponse, error) {
+func (c *AuthClient) GetUserPermission(ctx context.Context, userId uint64, tableName string, businessId uint64) (*auth.GetUserPermissionResponse, error) {
 	resp, err := c.client.GetUserPermission(ctx, &auth.GetUserPermissionRequest{
-		UserId:    userId,
-		TableName: tableName,
+		UserId:     userId,
+		TableName:  tableName,
+		BusinessId: businessId,
 	})
 	if err != nil {
 		return nil, err
@@ -106,6 +107,6 @@ func GetFieldAccess(ctx context.Context, userId uint64, tableName string) (*auth
 	return GetClient().GetFieldAccess(ctx, userId, tableName)
 }
 
-func GetUserPermission(ctx context.Context, userId uint64, tableName string) (*auth.GetUserPermissionResponse, error) {
-	return GetClient().GetUserPermission(ctx, userId, tableName)
+func GetUserPermission(ctx context.Context, userId uint64, tableName string, businessId uint64) (*auth.GetUserPermissionResponse, error) {
+	return GetClient().GetUserPermission(ctx, userId, tableName, businessId)
 }
