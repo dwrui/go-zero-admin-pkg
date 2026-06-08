@@ -4,7 +4,6 @@ go 1.25.0
 
 require (
 	github.com/aliyun/aliyun-oss-go-sdk v2.2.9+incompatible
-	github.com/dwrui/go-zero-admin/pkg v0.0.0-20260213083806-a893267d030b
 	github.com/emirpasic/gods v1.18.1
 	github.com/go-playground/validator/v10 v10.8.0
 	github.com/golang-jwt/jwt/v4 v4.5.2
