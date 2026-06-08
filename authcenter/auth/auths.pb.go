@@ -253,6 +253,7 @@ type GetUserPermissionRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	UserId        uint64                 `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`         // 用户ID
 	TableName     string                 `protobuf:"bytes,2,opt,name=table_name,json=tableName,proto3" json:"table_name,omitempty"` // 表名（可选，不传则不返回字段权限）
+	BusinessId    uint64                 `protobuf:"varint,3,opt,name=business_id,json=businessId,proto3" json:"business_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -299,6 +300,13 @@ func (x *GetUserPermissionRequest) GetTableName() string {
 		return x.TableName
 	}
 	return ""
+}
+
+func (x *GetUserPermissionRequest) GetBusinessId() uint64 {
+	if x != nil {
+		return x.BusinessId
+	}
+	return 0
 }
 
 type FieldPermission struct {
@@ -450,11 +458,13 @@ const file_auths_proto_rawDesc = "" +
 	"\x13edit_visible_fields\x18\x02 \x03(\tR\x11editVisibleFields\x12'\n" +
 	"\x0feditable_fields\x18\x03 \x03(\tR\x0eeditableFields\x12'\n" +
 	"\x0freadonly_fields\x18\x04 \x03(\tR\x0ereadonlyFields\x12.\n" +
-	"\x13view_visible_fields\x18\x05 \x03(\tR\x11viewVisibleFields\"R\n" +
+	"\x13view_visible_fields\x18\x05 \x03(\tR\x11viewVisibleFields\"s\n" +
 	"\x18GetUserPermissionRequest\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\x04R\x06userId\x12\x1d\n" +
 	"\n" +
-	"table_name\x18\x02 \x01(\tR\ttableName\"\xa1\x01\n" +
+	"table_name\x18\x02 \x01(\tR\ttableName\x12\x1f\n" +
+	"\vbusiness_id\x18\x03 \x01(\x04R\n" +
+	"businessId\"\xa1\x01\n" +
 	"\x0fFieldPermission\x12.\n" +
 	"\x13list_visible_fields\x18\x01 \x03(\tR\x11listVisibleFields\x12.\n" +
 	"\x13edit_visible_fields\x18\x02 \x03(\tR\x11editVisibleFields\x12.\n" +
