@@ -3,9 +3,11 @@ package db
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"strings"
 	"time"
 
+	"github.com/zeromicro/go-zero/core/logx"
 	"github.com/zeromicro/go-zero/core/stores/sqlx"
 )
 
@@ -28,25 +30,55 @@ func NewDBManager(datasource string) *DBManager {
 	return &DBManager{
 		conn:        sqlx.NewSqlConn("mysql", datasource),
 		tablePrefix: "",
-		poolConfig: DBPoolConfig{
-			MaxOpenConns:    50,
-			MaxIdleConns:    25,
-			ConnMaxLifetime: 30 * time.Minute,
-			ConnMaxIdleTime: 10 * time.Minute,
-		},
+		poolConfig:  GetDefaultPoolConfig(),
 	}
 }
 
-// SetPoolConfig 设置连接池配置
-func (db *DBManager) SetPoolConfig(config DBPoolConfig) *DBManager {
+// SetPoolConfig 设置连接池配置并验证连通性
+func (db *DBManager) SetPoolConfig(config DBPoolConfig) error {
+	normalizePoolConfig(&config)
 	db.poolConfig = config
-	if rawDB, err := db.conn.RawDB(); err == nil {
-		rawDB.SetMaxOpenConns(config.MaxOpenConns)
-		rawDB.SetMaxIdleConns(config.MaxIdleConns)
-		rawDB.SetConnMaxLifetime(config.ConnMaxLifetime)
-		rawDB.SetConnMaxIdleTime(config.ConnMaxIdleTime)
+
+	rawDB, err := db.conn.RawDB()
+	if err != nil {
+		return fmt.Errorf("获取数据库连接池失败: %w", err)
 	}
-	return db
+
+	rawDB.SetMaxOpenConns(config.MaxOpenConns)
+	rawDB.SetMaxIdleConns(config.MaxIdleConns)
+	rawDB.SetConnMaxLifetime(config.ConnMaxLifetime)
+	rawDB.SetConnMaxIdleTime(config.ConnMaxIdleTime)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	if err := rawDB.PingContext(ctx); err != nil {
+		return fmt.Errorf("数据库 Ping 失败: %w", err)
+	}
+
+	stats := rawDB.Stats()
+	logx.Infof("数据库连接池已配置: MaxOpen=%d MaxIdle=%d Lifetime=%s IdleTime=%s Open=%d InUse=%d Idle=%d",
+		config.MaxOpenConns, config.MaxIdleConns, config.ConnMaxLifetime, config.ConnMaxIdleTime,
+		stats.OpenConnections, stats.InUse, stats.Idle)
+	return nil
+}
+
+// Ping 检测数据库连通性
+func (db *DBManager) Ping(ctx context.Context) error {
+	rawDB, err := db.conn.RawDB()
+	if err != nil {
+		return err
+	}
+	return rawDB.PingContext(ctx)
+}
+
+// PoolStats 返回连接池状态
+func (db *DBManager) PoolStats() (sql.DBStats, error) {
+	rawDB, err := db.conn.RawDB()
+	if err != nil {
+		return sql.DBStats{}, err
+	}
+	return rawDB.Stats(), nil
 }
 
 // SetTablePrefix 设置表前缀

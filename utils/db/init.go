@@ -1,7 +1,9 @@
 package db
 
 import (
+	"context"
 	"sync"
+	"time"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )
@@ -11,10 +13,17 @@ var (
 	once      sync.Once
 )
 
-// InitDB 初始化数据库
+// InitDB 初始化数据库（启动时 Ping 失败则终止服务）
 func InitDB(config DBConfig) {
 	once.Do(func() {
-		dbManager = NewDBManagerFromConfig(config)
+		manager, err := NewDBManagerFromConfig(config)
+		logx.Must(err)
+
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+		logx.Must(manager.Ping(ctx))
+
+		dbManager = manager
 		logx.Info("数据库连接初始化成功")
 	})
 }

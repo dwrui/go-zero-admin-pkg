@@ -1112,7 +1112,7 @@ func (qb *Model) Sum(ctx context.Context, field string) *QueryResult {
 
 // Value 获取指定字段的值（单条记录）
 func (qb *Model) Value(ctx context.Context, field string) *QueryResult {
-	qb.fields = []string{field}
+	qb.fields = []string{quoteField(field)}
 	qb.Limit(1)
 	query, args := qb.buildQuery(ctx)
 
@@ -1144,7 +1144,7 @@ func (qb *Model) Value(ctx context.Context, field string) *QueryResult {
 
 // Column 获取单一字段的所有值 - 使用QueryRows处理多行数据
 func (qb *Model) Column(ctx context.Context, field string, dest interface{}) *QueryResult {
-	qb.fields = []string{field}
+	qb.fields = []string{quoteField(field)}
 	query, args := qb.buildQuery(ctx)
 
 	// 如果设置了SQLFetch，只输出SQL不执行查询
@@ -1309,7 +1309,7 @@ func (qb *Model) Insert(ctx context.Context, data ...interface{}) *QueryResult {
 	placeholders := make([]string, 0, len(dataMap))
 
 	for field := range dataMap {
-		fields = append(fields, field)
+		fields = append(fields, quoteField(field))
 		placeholders = append(placeholders, "?")
 		args = append(args, dataMap[field])
 	}
@@ -1407,7 +1407,7 @@ func (qb *Model) Save(ctx context.Context, data ...interface{}) *QueryResult {
 	placeholders := make([]string, 0, len(dataMap))
 
 	for field := range dataMap {
-		fields = append(fields, field)
+		fields = append(fields, quoteField(field))
 		placeholders = append(placeholders, "?")
 		args = append(args, dataMap[field])
 	}
@@ -1418,7 +1418,8 @@ func (qb *Model) Save(ctx context.Context, data ...interface{}) *QueryResult {
 
 	updates := make([]string, 0, len(dataMap))
 	for field := range dataMap {
-		updates = append(updates, fmt.Sprintf("%s = VALUES(%s)", field, field))
+		qf := quoteField(field)
+		updates = append(updates, fmt.Sprintf("%s = VALUES(%s)", qf, qf))
 	}
 
 	sql.WriteString(strings.Join(updates, ", "))
@@ -1438,10 +1439,18 @@ func (qb *Model) Save(ctx context.Context, data ...interface{}) *QueryResult {
 	}
 
 	result, err := qb.execCtx(ctx, query, args...)
+	if err != nil {
+		return &QueryResult{
+			data:  result,
+			err:   err,
+			query: query,
+			args:  args,
+		}
+	}
 	lastInsertID, _ := result.LastInsertId()
 	return &QueryResult{
 		data:   result,
-		err:    err,
+		err:    nil,
 		query:  query,
 		args:   args,
 		lastId: ga.String(lastInsertID),
@@ -1760,18 +1769,19 @@ func (qb *Model) Update(ctx context.Context, data ...interface{}) *QueryResult {
 
 	// 普通字段更新（支持表达式）
 	for field, value := range updateData {
+		qf := quoteField(field)
 		if str, ok := value.(string); ok {
 			// 支持MySQL函数表达式和字段表达式
 			if str == "NOW()" || str == "CURRENT_TIMESTAMP" ||
 				strings.Contains(str, field+" +") || strings.Contains(str, field+" -") ||
 				strings.Contains(str, field+" *") || strings.Contains(str, field+" /") {
-				sets = append(sets, fmt.Sprintf("%s = %s", field, str))
+				sets = append(sets, fmt.Sprintf("%s = %s", qf, str))
 			} else {
-				sets = append(sets, fmt.Sprintf("%s = ?", field))
+				sets = append(sets, fmt.Sprintf("%s = ?", qf))
 				args = append(args, value)
 			}
 		} else {
-			sets = append(sets, fmt.Sprintf("%s = ?", field))
+			sets = append(sets, fmt.Sprintf("%s = ?", qf))
 			args = append(args, value)
 		}
 	}
@@ -1787,9 +1797,13 @@ func (qb *Model) Update(ctx context.Context, data ...interface{}) *QueryResult {
 				sql.WriteString(where.operator)
 				sql.WriteString(" ")
 			}
-			sql.WriteString(where.field)
-			sql.WriteString(" ")
-			sql.WriteString(where.cond)
+			if where.field != "" {
+				sql.WriteString(quoteField(where.field))
+				sql.WriteString(" ")
+				sql.WriteString(where.cond)
+			} else {
+				sql.WriteString(quoteWhereCond(where.cond))
+			}
 			args = append(args, where.args...)
 		}
 	}
@@ -1939,9 +1953,13 @@ func (qb *Model) Inc(ctx context.Context, field string, value interface{}) *Quer
 				sql.WriteString(where.operator)
 				sql.WriteString(" ")
 			}
-			sql.WriteString(where.field)
-			sql.WriteString(" ")
-			sql.WriteString(where.cond)
+			if where.field != "" {
+				sql.WriteString(quoteField(where.field))
+				sql.WriteString(" ")
+				sql.WriteString(where.cond)
+			} else {
+				sql.WriteString(quoteWhereCond(where.cond))
+			}
 			args = append(args, where.args...)
 		}
 	}
@@ -2001,9 +2019,13 @@ func (qb *Model) Dec(ctx context.Context, field string, value interface{}) *Quer
 				sql.WriteString(where.operator)
 				sql.WriteString(" ")
 			}
-			sql.WriteString(where.field)
-			sql.WriteString(" ")
-			sql.WriteString(where.cond)
+			if where.field != "" {
+				sql.WriteString(quoteField(where.field))
+				sql.WriteString(" ")
+				sql.WriteString(where.cond)
+			} else {
+				sql.WriteString(quoteWhereCond(where.cond))
+			}
 			args = append(args, where.args...)
 		}
 	}
@@ -2078,9 +2100,13 @@ func (qb *Model) Delete(ctx context.Context) *QueryResult {
 				sql.WriteString(where.operator)
 				sql.WriteString(" ")
 			}
-			sql.WriteString(where.field)
-			sql.WriteString(" ")
-			sql.WriteString(where.cond)
+			if where.field != "" {
+				sql.WriteString(quoteField(where.field))
+				sql.WriteString(" ")
+				sql.WriteString(where.cond)
+			} else {
+				sql.WriteString(quoteWhereCond(where.cond))
+			}
 			args = append(args, where.args...)
 		}
 	}
@@ -2157,7 +2183,7 @@ func (qb *Model) buildQuery(ctx context.Context) (string, []interface{}) {
 			conditions = append(conditions, where.cond)
 		} else {
 			// 简单条件，组合字段名和条件
-			conditions = append(conditions, where.field+" "+where.cond)
+			conditions = append(conditions, quoteField(where.field)+" "+where.cond)
 		}
 		args = append(args, where.args...)
 	}
@@ -2246,6 +2272,52 @@ func (r *QueryResult) isSliceEmpty(v interface{}) bool {
 		return rv.Len() == 0
 	}
 	return false
+}
+
+// quoteField 为简单字段名加反引号，避免 MySQL 保留字解析问题（如 key、role_id）
+func quoteField(field string) string {
+	field = strings.TrimSpace(field)
+	if field == "" {
+		return field
+	}
+	if strings.HasPrefix(field, "`") && strings.HasSuffix(field, "`") {
+		return field
+	}
+	if strings.ContainsAny(field, " (,.*") {
+		return field
+	}
+	return "`" + strings.ReplaceAll(field, "`", "") + "`"
+}
+
+// quoteWhereCond 为完整 WHERE 片段中的字段名加反引号，如 key = ? -> `key` = ?
+func quoteWhereCond(cond string) string {
+	cond = strings.TrimSpace(cond)
+	if cond == "" {
+		return cond
+	}
+	if strings.Contains(cond, "`") || strings.Contains(strings.ToUpper(cond), " IN ") {
+		return cond
+	}
+	parts := strings.Fields(cond)
+	if len(parts) >= 3 && isWhereOperator(parts[1]) {
+		return quoteField(parts[0]) + " " + strings.Join(parts[1:], " ")
+	}
+	if len(parts) >= 2 && isWhereOperator(parts[0]) {
+		return cond
+	}
+	if len(parts) >= 2 {
+		return quoteField(parts[0]) + " " + strings.Join(parts[1:], " ")
+	}
+	return cond
+}
+
+func isWhereOperator(token string) bool {
+	switch token {
+	case "=", "<>", "!=", ">", "<", ">=", "<=", "LIKE", "like":
+		return true
+	default:
+		return false
+	}
 }
 
 // formatSQLValue 格式化SQL参数值为可打印的字符串
