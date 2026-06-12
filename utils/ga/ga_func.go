@@ -161,3 +161,29 @@ func FormatNullDateTime(nt sql.NullTime) string {
 	}
 	return ""
 }
+
+// BuildTreeList 将扁平列表构建为树形结构
+// list: 扁平数据列表
+// rootParentId: 根节点的上级ID值（通常为0）
+// parentField: 上级ID字段名（如 pid、base_unit_id）
+// idField: 主键字段名（默认 id）
+func BuildTreeList(list List, rootParentId int64, parentField string, idField ...string) List {
+	idKey := "id"
+	if len(idField) > 0 && idField[0] != "" {
+		idKey = idField[0]
+	}
+
+	var result List
+	for _, item := range list {
+		if Int64(item[parentField]) != rootParentId {
+			continue
+		}
+		node := item
+		children := BuildTreeList(list, Int64(node[idKey]), parentField, idKey)
+		if len(children) > 0 {
+			node["children"] = children
+		}
+		result = append(result, node)
+	}
+	return result
+}
