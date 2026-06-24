@@ -2,7 +2,9 @@ package configcenter
 
 import (
 	"context"
-	"github.com/dwrui/go-zero-admin-pkg/configcenter/configcenter"
+
+	configcenter2 "github.com/dwrui/go-zero-admin-pkg/rpcclient/configcenter/configcenter"
+
 	"sync"
 
 	"github.com/zeromicro/go-zero/core/discov"
@@ -15,7 +17,7 @@ var (
 )
 
 type ConfigClient struct {
-	client configcenter.ConfigApiServiceClient
+	client configcenter2.ConfigApiServiceClient
 	conn   zrpc.Client
 }
 
@@ -41,7 +43,7 @@ func Init(c Config) error {
 			return
 		}
 		defaultClient = &ConfigClient{
-			client: configcenter.NewConfigApiServiceClient(conn.Conn()),
+			client: configcenter2.NewConfigApiServiceClient(conn.Conn()),
 			conn:   conn,
 		}
 	})
@@ -62,7 +64,7 @@ func GetClient() *ConfigClient {
 }
 
 func (c *ConfigClient) GetConfig(ctx context.Context, categoryKey string) (map[string]string, error) {
-	resp, err := c.client.GetConfig(ctx, &configcenter.GetConfigRequest{
+	resp, err := c.client.GetConfig(ctx, &configcenter2.GetConfigRequest{
 		CategoryKey: categoryKey,
 	})
 	if err != nil {
@@ -72,7 +74,7 @@ func (c *ConfigClient) GetConfig(ctx context.Context, categoryKey string) (map[s
 }
 
 func (c *ConfigClient) GetConfigInfo(ctx context.Context, configType string) (string, error) {
-	resp, err := c.client.GetConfigInfo(ctx, &configcenter.GetConfigInfoRequest{
+	resp, err := c.client.GetConfigInfo(ctx, &configcenter2.GetConfigInfoRequest{
 		ConfigType: configType,
 	})
 	if err != nil {
@@ -81,7 +83,7 @@ func (c *ConfigClient) GetConfigInfo(ctx context.Context, configType string) (st
 	return resp.GetConfigValue(), nil
 }
 
-func (c *ConfigClient) RawClient() configcenter.ConfigApiServiceClient {
+func (c *ConfigClient) RawClient() configcenter2.ConfigApiServiceClient {
 	return c.client
 }
 

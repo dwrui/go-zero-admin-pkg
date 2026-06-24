@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+package workflow;
+
+option go_package = "./workflow";
+
+// ==================== 流程实例服务（审批提交） ====================
+
+message StartInstanceRequest {
+  string process_key = 1;
+  string biz_type = 2;
+  uint64 biz_id = 3;
+  string biz_no = 4;
+  string title = 5;
+  string form_data = 6;
+  uint64 start_user_id = 7;
+  string start_user_name = 8;
+  uint64 start_dept_id = 9;
+  int64 business_id = 10;
+  int64 dept_id = 11;
+  int64 create_by = 12;
+}
+
+message StartInstanceResponse {
+  uint64 instance_id = 1;
+}
+
+service InstanceService {
+  rpc StartInstance(StartInstanceRequest) returns (StartInstanceResponse);
+}

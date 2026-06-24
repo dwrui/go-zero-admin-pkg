@@ -4,7 +4,7 @@ import (
 	"context"
 	"sync"
 
-	"github.com/dwrui/go-zero-admin-pkg/authcenter/auth"
+	auth2 "github.com/dwrui/go-zero-admin-pkg/rpcclient/authcenter/auth"
 	"github.com/zeromicro/go-zero/core/discov"
 	"github.com/zeromicro/go-zero/zrpc"
 )
@@ -15,7 +15,7 @@ var (
 )
 
 type AuthClient struct {
-	client auth.AuthServiceClient
+	client auth2.AuthServiceClient
 	conn   zrpc.Client
 }
 
@@ -41,7 +41,7 @@ func Init(c Config) error {
 			return
 		}
 		defaultClient = &AuthClient{
-			client: auth.NewAuthServiceClient(conn.Conn()),
+			client: auth2.NewAuthServiceClient(conn.Conn()),
 			conn:   conn,
 		}
 	})
@@ -62,7 +62,7 @@ func GetClient() *AuthClient {
 }
 
 func (c *AuthClient) CheckToken(ctx context.Context, token string, permission string) (string, error) {
-	resp, err := c.client.CheckToken(ctx, &auth.CheckTokenRequest{
+	resp, err := c.client.CheckToken(ctx, &auth2.CheckTokenRequest{
 		Token:      token,
 		Permission: permission,
 	})
@@ -72,8 +72,8 @@ func (c *AuthClient) CheckToken(ctx context.Context, token string, permission st
 	return resp.GetNewToken(), nil
 }
 
-func (c *AuthClient) GetFieldAccess(ctx context.Context, userId uint64, tableName string) (*auth.GetFieldAccessResponse, error) {
-	resp, err := c.client.GetFieldAccess(ctx, &auth.GetFieldAccessRequest{
+func (c *AuthClient) GetFieldAccess(ctx context.Context, userId uint64, tableName string) (*auth2.GetFieldAccessResponse, error) {
+	resp, err := c.client.GetFieldAccess(ctx, &auth2.GetFieldAccessRequest{
 		UserId:    userId,
 		TableName: tableName,
 	})
@@ -83,8 +83,8 @@ func (c *AuthClient) GetFieldAccess(ctx context.Context, userId uint64, tableNam
 	return resp, nil
 }
 
-func (c *AuthClient) GetUserPermission(ctx context.Context, userId uint64, tableName string, businessId uint64) (*auth.GetUserPermissionResponse, error) {
-	resp, err := c.client.GetUserPermission(ctx, &auth.GetUserPermissionRequest{
+func (c *AuthClient) GetUserPermission(ctx context.Context, userId uint64, tableName string, businessId uint64) (*auth2.GetUserPermissionResponse, error) {
+	resp, err := c.client.GetUserPermission(ctx, &auth2.GetUserPermissionRequest{
 		UserId:     userId,
 		TableName:  tableName,
 		BusinessId: businessId,
@@ -95,7 +95,7 @@ func (c *AuthClient) GetUserPermission(ctx context.Context, userId uint64, table
 	return resp, nil
 }
 
-func (c *AuthClient) RawClient() auth.AuthServiceClient {
+func (c *AuthClient) RawClient() auth2.AuthServiceClient {
 	return c.client
 }
 
@@ -103,10 +103,10 @@ func CheckToken(ctx context.Context, token string, permission string) (string, e
 	return GetClient().CheckToken(ctx, token, permission)
 }
 
-func GetFieldAccess(ctx context.Context, userId uint64, tableName string) (*auth.GetFieldAccessResponse, error) {
+func GetFieldAccess(ctx context.Context, userId uint64, tableName string) (*auth2.GetFieldAccessResponse, error) {
 	return GetClient().GetFieldAccess(ctx, userId, tableName)
 }
 
-func GetUserPermission(ctx context.Context, userId uint64, tableName string, businessId uint64) (*auth.GetUserPermissionResponse, error) {
+func GetUserPermission(ctx context.Context, userId uint64, tableName string, businessId uint64) (*auth2.GetUserPermissionResponse, error) {
 	return GetClient().GetUserPermission(ctx, userId, tableName, businessId)
 }
