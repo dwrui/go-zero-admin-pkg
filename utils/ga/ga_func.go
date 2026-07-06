@@ -4,6 +4,8 @@ import (
 	"database/sql"
 	"fmt"
 	"reflect"
+	"strings"
+	"unicode"
 
 	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gmd5"
 	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gvar"
@@ -186,4 +188,55 @@ func BuildTreeList(list List, rootParentId int64, parentField string, idField ..
 		result = append(result, node)
 	}
 	return result
+}
+
+// SpecNormalized 规格型号归一化，写入 spec_normalized 字段用于查重与检索；创建后不可修改。
+// 规则：去首尾空白、全角转半角、小写、统一乘号/常用单位、去除标点与空白，保留字母数字与中文。
+func SpecNormalized(spec string) string {
+	s := strings.TrimSpace(spec)
+	if s == "" {
+		return ""
+	}
+	s = specFullWidthToHalfWidth(s)
+	s = strings.ToLower(s)
+	s = strings.NewReplacer(
+		"×", "x", "＊", "x", "*", "x",
+		"毫米", "mm", "㎜", "mm",
+		"厘米", "cm", "公分", "cm",
+		"千克", "kg", "公斤", "kg",
+		"克", "g",
+	).Replace(s)
+
+	var b strings.Builder
+	b.Grow(len(s))
+	for _, r := range s {
+		if unicode.IsLetter(r) || unicode.IsDigit(r) || r == 'x' {
+			b.WriteRune(r)
+			continue
+		}
+		if r >= 0x4e00 && r <= 0x9fff {
+			b.WriteRune(r)
+		}
+	}
+	out := b.String()
+	if len(out) > 200 {
+		out = out[:200]
+	}
+	return out
+}
+
+func specFullWidthToHalfWidth(s string) string {
+	var b strings.Builder
+	b.Grow(len(s))
+	for _, r := range s {
+		switch {
+		case r == 0x3000:
+			b.WriteRune(' ')
+		case r >= 0xFF01 && r <= 0xFF5E:
+			b.WriteRune(r - 0xFEE0)
+		default:
+			b.WriteRune(r)
+		}
+	}
+	return b.String()
 }

@@ -16,8 +16,11 @@ type FieldConfig struct {
 	OptionValue   string
 	Datatable     string
 	Datatablename string
+	DicGroupId    int64
 	Formtype      string
 }
+
+type GetDicFieldValFunc func(groupId int64, keyvalue string) string
 
 type ColumnConfig struct {
 	Title string
@@ -64,7 +67,11 @@ func ConvertFieldValue(value interface{}, optionValue string) string {
 	return valStr
 }
 
-func ExportExcel(columns []ColumnConfig, fieldConfigs []FieldConfig, list interface{}, getTableFieldVal GetTableFieldValFunc) ([]byte, error) {
+func ExportExcel(columns []ColumnConfig, fieldConfigs []FieldConfig, list interface{}, getTableFieldVal GetTableFieldValFunc, getDicFieldVal ...GetDicFieldValFunc) ([]byte, error) {
+	var dicFn GetDicFieldValFunc
+	if len(getDicFieldVal) > 0 {
+		dicFn = getDicFieldVal[0]
+	}
 	f := excelize.NewFile()
 	defer f.Close()
 	sheetName := "Sheet1"
@@ -131,6 +138,8 @@ func ExportExcel(columns []ColumnConfig, fieldConfigs []FieldConfig, list interf
 					} else {
 						rowData = append(rowData, "")
 					}
+				} else if cfg.Formtype == "belongDic" && cfg.DicGroupId > 0 && dicFn != nil {
+					rowData = append(rowData, dicFn(cfg.DicGroupId, fmt.Sprintf("%v", rawValue)))
 				} else if cfg.OptionValue != "" {
 					rowData = append(rowData, ConvertFieldValue(rawValue, cfg.OptionValue))
 				} else {
