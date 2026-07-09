@@ -14,10 +14,10 @@ type ImportRowError struct {
 	Message string `json:"message"`
 }
 
-// ParseImportRows 按 mapping 校验并转换原始行
-func ParseImportRows(mapping *ImportMapping, rawRows []map[string]string, excelRowNums []int, belongTo BelongToResolver, dic DicResolver) ([]map[string]interface{}, []ImportRowError) {
+// ParseImportRows 按 mapping 校验并转换原始行；返回有效行、对应 Excel 行号、错误列表
+func ParseImportRows(mapping *ImportMapping, rawRows []map[string]string, excelRowNums []int, belongTo BelongToResolver, dic DicResolver, region RegionResolver) ([]map[string]interface{}, []int, []ImportRowError) {
 	if mapping == nil {
-		return nil, []ImportRowError{{Row: 0, Field: "", Message: "mapping 为空"}}
+		return nil, nil, []ImportRowError{{Row: 0, Field: "", Message: "mapping 为空"}}
 	}
 	cols := mapping.ImportableColumns()
 	colByField := make(map[string]ImportColumn, len(cols))
@@ -26,6 +26,7 @@ func ParseImportRows(mapping *ImportMapping, rawRows []map[string]string, excelR
 	}
 
 	valid := make([]map[string]interface{}, 0, len(rawRows))
+	validRows := make([]int, 0, len(rawRows))
 	var allErrors []ImportRowError
 
 	for i, raw := range rawRows {
@@ -33,19 +34,20 @@ func ParseImportRows(mapping *ImportMapping, rawRows []map[string]string, excelR
 		if i < len(excelRowNums) && excelRowNums[i] > 0 {
 			excelRow = excelRowNums[i]
 		}
-		converted, rowErrors := parseOneImportRow(colByField, cols, excelRow, raw, belongTo, dic)
+		converted, rowErrors := parseOneImportRow(colByField, cols, excelRow, raw, belongTo, dic, region)
 		if len(rowErrors) > 0 {
 			allErrors = append(allErrors, rowErrors...)
 			continue
 		}
 		if len(converted) > 0 {
 			valid = append(valid, converted)
+			validRows = append(validRows, excelRow)
 		}
 	}
-	return valid, allErrors
+	return valid, validRows, allErrors
 }
 
-func parseOneImportRow(colByField map[string]ImportColumn, cols []ImportColumn, excelRow int, raw map[string]string, belongTo BelongToResolver, dic DicResolver) (map[string]interface{}, []ImportRowError) {
+func parseOneImportRow(colByField map[string]ImportColumn, cols []ImportColumn, excelRow int, raw map[string]string, belongTo BelongToResolver, dic DicResolver, region RegionResolver) (map[string]interface{}, []ImportRowError) {
 	out := make(map[string]interface{})
 	var errs []ImportRowError
 
@@ -54,7 +56,13 @@ func parseOneImportRow(colByField map[string]ImportColumn, cols []ImportColumn, 
 		if rawVal == "" && !col.Required {
 			continue
 		}
-		converted, err := ConvertImportCell(col, rawVal, belongTo, dic)
+		var converted interface{}
+		var err error
+		if IsRegionFieldType(col.FieldType) {
+			converted, err = convertRegionImportCell(col, rawVal, out, region)
+		} else {
+			converted, err = ConvertImportCell(col, rawVal, belongTo, dic)
+		}
 		if err == ErrImportRefSkip {
 			continue
 		}
@@ -72,7 +80,6 @@ func parseOneImportRow(colByField map[string]ImportColumn, cols []ImportColumn, 
 		out[col.DbField] = converted
 	}
 
-	// 必填列未出现在 raw 中
 	for _, col := range cols {
 		if !col.Required {
 			continue
@@ -94,6 +101,41 @@ func parseOneImportRow(colByField map[string]ImportColumn, cols []ImportColumn, 
 		return nil, errs
 	}
 	return out, nil
+}
+
+func convertRegionImportCell(col ImportColumn, raw string, row map[string]interface{}, region RegionResolver) (interface{}, error) {
+	raw = strings.TrimSpace(raw)
+	if raw == "" {
+		if col.Required {
+			return nil, fmt.Errorf("%s 为必填项", col.ExcelHeader)
+		}
+		return nil, nil
+	}
+	if region == nil {
+		return nil, fmt.Errorf("%s 需要地区解析器", col.ExcelHeader)
+	}
+	var parentCode int64
+	if col.ParentField != "" {
+		if v, ok := row[col.ParentField]; ok && v != nil {
+			switch n := v.(type) {
+			case int64:
+				parentCode = n
+			case int:
+				parentCode = int64(n)
+			case float64:
+				parentCode = int64(n)
+			case string:
+				if parsed, err := strconv.ParseInt(strings.TrimSpace(n), 10, 64); err == nil {
+					parentCode = parsed
+				}
+			}
+		}
+	}
+	code, err := region.ResolveRegion(col, raw, parentCode)
+	if err != nil {
+		return nil, err
+	}
+	return code, nil
 }
 
 // ConvertImportCell 将单元格字符串转为入库值
@@ -128,7 +170,6 @@ func ConvertImportCell(col ImportColumn, raw string, belongTo BelongToResolver, 
 			}
 			return dic.ResolveBelongDic(col, raw)
 		}
-		// 未配置 dic_group_id 时回退 option_value（兼容旧字段）
 		return resolveOptionValue(col.OptionValue, raw, col.ExcelHeader)
 	case "belongto":
 		if belongTo == nil {

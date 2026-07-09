@@ -23,11 +23,48 @@ type FieldConfig struct {
 type GetDicFieldValFunc func(groupId int64, keyvalue string) string
 
 type ColumnConfig struct {
-	Title string
-	Field string
+	Title     string
+	Field     string
+	Sensitive bool
+	MaskMode  string
 }
 
 type GetTableFieldValFunc func(tableName, fieldName string, id int64) string
+
+// GetRelFieldValByCodeFunc 按关联键查显示值（省市区等 region_code）
+type GetRelFieldValByCodeFunc func(tableName, keyField, valueField, code string) string
+
+const regionRelKeyField = "region_code"
+
+func isRegionFormType(formtype string) bool {
+	switch formtype {
+	case "region", "region_province", "region_city", "region_area":
+		return true
+	default:
+		return false
+	}
+}
+
+func parseExportOptionalCallbacks(optional []any) (GetDicFieldValFunc, GetRelFieldValByCodeFunc) {
+	var dicFn GetDicFieldValFunc
+	var relFn GetRelFieldValByCodeFunc
+	for _, item := range optional {
+		if item == nil {
+			continue
+		}
+		switch fn := item.(type) {
+		case GetDicFieldValFunc:
+			dicFn = fn
+		case func(int64, string) string:
+			dicFn = fn
+		case GetRelFieldValByCodeFunc:
+			relFn = fn
+		case func(string, string, string, string) string:
+			relFn = fn
+		}
+	}
+	return dicFn, relFn
+}
 
 func GetFieldValue(v reflect.Value, fieldName string) interface{} {
 	if v.Kind() == reflect.Ptr {
@@ -67,11 +104,8 @@ func ConvertFieldValue(value interface{}, optionValue string) string {
 	return valStr
 }
 
-func ExportExcel(columns []ColumnConfig, fieldConfigs []FieldConfig, list interface{}, getTableFieldVal GetTableFieldValFunc, getDicFieldVal ...GetDicFieldValFunc) ([]byte, error) {
-	var dicFn GetDicFieldValFunc
-	if len(getDicFieldVal) > 0 {
-		dicFn = getDicFieldVal[0]
-	}
+func ExportExcel(columns []ColumnConfig, fieldConfigs []FieldConfig, list interface{}, getTableFieldVal GetTableFieldValFunc, optional ...any) ([]byte, error) {
+	dicFn, relFn := parseExportOptionalCallbacks(optional)
 	f := excelize.NewFile()
 	defer f.Close()
 	sheetName := "Sheet1"
@@ -138,6 +172,13 @@ func ExportExcel(columns []ColumnConfig, fieldConfigs []FieldConfig, list interf
 					} else {
 						rowData = append(rowData, "")
 					}
+				} else if isRegionFormType(cfg.Formtype) && cfg.Datatable != "" && cfg.Datatablename != "" && relFn != nil {
+					code := strings.TrimSpace(fmt.Sprintf("%v", rawValue))
+					if code == "" || code == "0" {
+						rowData = append(rowData, "")
+					} else {
+						rowData = append(rowData, relFn(cfg.Datatable, regionRelKeyField, cfg.Datatablename, code))
+					}
 				} else if cfg.Formtype == "belongDic" && cfg.DicGroupId > 0 && dicFn != nil {
 					rowData = append(rowData, dicFn(cfg.DicGroupId, fmt.Sprintf("%v", rawValue)))
 				} else if cfg.OptionValue != "" {
@@ -150,6 +191,20 @@ func ExportExcel(columns []ColumnConfig, fieldConfigs []FieldConfig, list interf
 			}
 		}
 		for colIdx, value := range rowData {
+			maskMode := MaskModeNone
+			if colIdx < len(columns) {
+				maskMode = MaskModeForColumnConfig(columns[colIdx].Sensitive, columns[colIdx].MaskMode, columns[colIdx].Field)
+			} else if colIdx < len(fieldNames) {
+				for _, col := range columns {
+					if col.Field == fieldNames[colIdx] {
+						maskMode = MaskModeForColumnConfig(col.Sensitive, col.MaskMode, col.Field)
+						break
+					}
+				}
+			}
+			if maskMode != MaskModeNone {
+				value = MaskExportValue(value, maskMode)
+			}
 			cell, _ := excelize.CoordinatesToCellName(colIdx+1, rowIdx+2)
 			f.SetCellValue(sheetName, cell, value)
 		}

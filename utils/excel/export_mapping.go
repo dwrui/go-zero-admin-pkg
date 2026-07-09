@@ -23,6 +23,8 @@ type ExportColumn struct {
 	DbField        string `json:"db_field"`
 	FieldType      string `json:"field_type"`
 	Exportable     bool   `json:"exportable"`
+	Sensitive      bool   `json:"sensitive,omitempty"`
+	MaskMode       string `json:"mask_mode,omitempty"`
 	TenantEditable bool   `json:"tenant_editable"`
 	OptionValue    string `json:"option_value,omitempty"`
 	RefTable       string `json:"ref_table,omitempty"`
@@ -33,8 +35,10 @@ type ExportColumn struct {
 
 // ExportColumnConfig 对接各模块 excel.ExportExcel 的列配置
 type ExportColumnConfig struct {
-	Title string
-	Field string
+	Title     string
+	Field     string
+	Sensitive bool
+	MaskMode  string
 }
 
 // DefaultExportTplCode 导出默认模板编码：base_brand_export_default
@@ -85,6 +89,10 @@ func BuildExportMapping(bizType, targetTable, moduleName string, generateCodeID 
 			Exportable:     true,
 			TenantEditable: isTenantEditableFieldType(f.Formtype),
 			OptionValue:    f.OptionValue,
+		}
+		if f.IsSensitive == 1 || SuggestIsSensitive(f.Field, f.Name) {
+			col.Sensitive = true
+			col.MaskMode = DefaultMaskMode(f.Field)
 		}
 		if f.Formtype == "belongto" {
 			col.RefTable = f.Datatable
@@ -143,7 +151,21 @@ func (m *ExportMapping) ColumnConfigs() []ExportColumnConfig {
 		if title == "" {
 			title = c.DbField
 		}
-		out = append(out, ExportColumnConfig{Title: title, Field: c.DbField})
+		maskMode := EffectiveMaskMode(c.Sensitive, c.MaskMode, c.DbField)
+		out = append(out, ExportColumnConfig{Title: title, Field: c.DbField, Sensitive: c.Sensitive, MaskMode: maskMode})
 	}
 	return out
+}
+
+// HasSensitiveColumns 导出模板是否含敏感列
+func (m *ExportMapping) HasSensitiveColumns() bool {
+	if m == nil {
+		return false
+	}
+	for _, c := range m.Columns {
+		if c.Exportable && c.Sensitive {
+			return true
+		}
+	}
+	return false
 }

@@ -42,6 +42,7 @@ type Model struct {
 	decData       map[string]interface{}
 	hasDeleteTime *bool
 	primaryKey    string
+	buildErr      error
 	cacheEnabled  bool
 	cacheTTL      time.Duration
 	cachePrefix   string
@@ -305,8 +306,123 @@ func (qb *Model) Join(table, alias, on string, args ...interface{}) *Model {
 	return qb
 }
 
+// setBuildErr 记录链式构建错误（仅保留首个错误）
+func (qb *Model) setBuildErr(err error) *Model {
+	if err != nil && qb.buildErr == nil {
+		qb.buildErr = err
+	}
+	return qb
+}
+
+func (qb *Model) whereOperator() string {
+	if len(qb.where) == 0 {
+		return ""
+	}
+	return "AND"
+}
+
+// appendRawWhere 追加完整 SQL 条件片段（不含占位符）
+func (qb *Model) appendRawWhere(cond string) {
+	cond = strings.TrimSpace(cond)
+	if cond == "" {
+		return
+	}
+	qb.where = append(qb.where, whereClause{
+		operator: qb.whereOperator(),
+		field:    "",
+		cond:     cond,
+		args:     nil,
+	})
+}
+
+// appendStringWhere 处理 Where("...", args...) 字符串条件
+func (qb *Model) appendStringWhere(cond string, args ...interface{}) *Model {
+	if qb.buildErr != nil {
+		return qb
+	}
+	cond = strings.TrimSpace(cond)
+	if cond == "" {
+		return qb
+	}
+	operator := qb.whereOperator()
+	lowerCond := strings.ToLower(cond)
+
+	if strings.Contains(lowerCond, "in(?)") {
+		if len(args) == 0 {
+			return qb.setBuildErr(fmt.Errorf("where条件缺少参数"))
+		}
+		field := cond
+		if idx := strings.Index(lowerCond, "in(?)"); idx != -1 {
+			field = strings.TrimSpace(cond[:idx])
+		}
+		var inArgs []interface{}
+		if len(args) == 1 {
+			v := reflect.ValueOf(args[0])
+			if v.Kind() == reflect.Slice {
+				inArgs = make([]interface{}, v.Len())
+				for j := 0; j < v.Len(); j++ {
+					inArgs[j] = v.Index(j).Interface()
+				}
+			} else {
+				inArgs = []interface{}{args[0]}
+			}
+		} else {
+			inArgs = args
+		}
+		if len(inArgs) == 0 {
+			qb.where = append(qb.where, whereClause{
+				operator: operator,
+				field:    field,
+				cond:     "IN (NULL)",
+				args:     []interface{}{},
+			})
+			return qb
+		}
+		placeholders := make([]string, len(inArgs))
+		for j := range placeholders {
+			placeholders[j] = "?"
+		}
+		qb.where = append(qb.where, whereClause{
+			operator: operator,
+			field:    "",
+			cond:     fmt.Sprintf("%s IN (%s)", field, strings.Join(placeholders, ", ")),
+			args:     inArgs,
+		})
+		return qb
+	}
+
+	if strings.Contains(cond, "?") {
+		if len(args) == 0 {
+			return qb.setBuildErr(fmt.Errorf("where条件缺少参数"))
+		}
+		qb.where = append(qb.where, whereClause{
+			operator: operator,
+			field:    "",
+			cond:     cond,
+			args:     args,
+		})
+		return qb
+	}
+
+	if len(args) > 0 {
+		qb.where = append(qb.where, whereClause{
+			operator: operator,
+			field:    cond,
+			cond:     "= ?",
+			args:     args,
+		})
+		return qb
+	}
+
+	qb.appendRawWhere(cond)
+	return qb
+}
+
 // Where 设置条件 (支持map和map切片)
 func (qb *Model) Where(conditions interface{}, args ...interface{}) *Model {
+	if qb.buildErr != nil {
+		return qb
+	}
 	switch cond := conditions.(type) {
 	case map[string]interface{}:
 		// 处理map类型条件
@@ -548,78 +664,7 @@ func (qb *Model) Where(conditions interface{}, args ...interface{}) *Model {
 			}
 		}
 	case string:
-		// 处理字符串条件
-		operator := "AND"
-		if len(qb.where) == 0 {
-			operator = ""
-		}
-		// 检查是否包含 IN 关键字
-		lowerCond := strings.ToLower(cond)
-		if strings.Contains(lowerCond, "in(?)") && len(args) > 0 {
-			// 提取字段名
-			field := cond
-			if idx := strings.Index(lowerCond, "in(?)"); idx != -1 {
-				field = strings.TrimSpace(cond[:idx])
-			}
-
-			// 处理参数，转换为 []interface{}
-			var inArgs []interface{}
-			if len(args) == 1 {
-				// 单个参数，检查是否为切片
-				v := reflect.ValueOf(args[0])
-				if v.Kind() == reflect.Slice {
-					// 是切片，转换为 []interface{}
-					inArgs = make([]interface{}, v.Len())
-					for j := 0; j < v.Len(); j++ {
-						inArgs[j] = v.Index(j).Interface()
-					}
-				} else {
-					// 不是切片，作为单个值处理
-					inArgs = []interface{}{args[0]}
-				}
-			} else {
-				// 多个参数，直接使用
-				inArgs = args
-			}
-
-			// 只有当有值时才添加 IN 条件
-			if len(inArgs) > 0 {
-				placeholders := make([]string, len(inArgs))
-				for j := range placeholders {
-					placeholders[j] = "?"
-				}
-				condPattern := fmt.Sprintf("%s IN (%s)", field, strings.Join(placeholders, ", "))
-
-				qb.where = append(qb.where, whereClause{
-					operator: operator,
-					field:    "",
-					cond:     condPattern,
-					args:     inArgs,
-				})
-			} else {
-				qb.where = append(qb.where, whereClause{
-					operator: operator,
-					field:    field,       // 保留字段名
-					cond:     "IN (NULL)", // 添加一个永远为假的条件
-					args:     []interface{}{},
-				})
-			}
-		} else if strings.Contains(cond, "?") {
-			// 其他带问号的条件
-			qb.where = append(qb.where, whereClause{
-				operator: operator,
-				field:    "",
-				cond:     cond,
-				args:     args,
-			})
-		} else {
-			qb.where = append(qb.where, whereClause{
-				operator: operator,
-				field:    cond,  // 字段名留空，表示这是完整条件
-				cond:     "= ?", // 条件语句直接存储
-				args:     args,
-			})
-		}
+		return qb.appendStringWhere(cond, args...)
 	}
 	return qb
 }
@@ -811,6 +856,9 @@ func (qb *Model) LockInShareMode() *Model {
 
 // Find 查询单条记录
 func (qb *Model) Find(ctx context.Context, dest interface{}) *QueryResult {
+	if qb.buildErr != nil {
+		return &QueryResult{data: dest, err: qb.buildErr}
+	}
 	qb.Limit(1)
 	query, args := qb.buildQuery(ctx)
 
@@ -842,6 +890,9 @@ func (qb *Model) Find(ctx context.Context, dest interface{}) *QueryResult {
 
 // Select 查询多条记录
 func (qb *Model) Select(ctx context.Context, dest interface{}) *QueryResult {
+	if qb.buildErr != nil {
+		return &QueryResult{data: dest, err: qb.buildErr}
+	}
 	query, args := qb.buildQuery(ctx)
 	// 如果设置了SQLFetch，只输出SQL不执行查询
 	if qb.sqlFetch {
@@ -951,6 +1002,9 @@ func (qb *Model) Paginate(ctx context.Context, page, pageSize int, dest interfac
 
 // Count 统计数量
 func (qb *Model) Count(ctx context.Context) *QueryResult {
+	if qb.buildErr != nil {
+		return &QueryResult{data: int64(0), err: qb.buildErr}
+	}
 	qb.fields = []string{"COUNT(*)"}
 	query, args := qb.buildQuery(ctx)
 
@@ -1685,6 +1739,9 @@ func (qb *Model) InsertAll(ctx context.Context, data ...interface{}) *QueryResul
 // Update 数据更新
 // Update 数据更新
 func (qb *Model) Update(ctx context.Context, data ...interface{}) *QueryResult {
+	if qb.buildErr != nil {
+		return &QueryResult{data: nil, err: qb.buildErr, query: "", args: nil}
+	}
 	var err error
 	// 如果Data没有设置数据，才使用Update参数中的数据
 	if qb.data == nil && len(data) > 0 && data[0] != nil {
@@ -1967,9 +2024,9 @@ func (qb *Model) Inc(ctx context.Context, field string, value interface{}) *Quer
 	// 默认添加软删除条件（只有调用WithTrashed时才不包含）
 	if !qb.withTrashed {
 		if len(qb.where) > 0 {
-			sql.WriteString(" AND delete_time IS NULL")
+			sql.WriteString(" AND delete_time = 0")
 		} else {
-			sql.WriteString(" WHERE delete_time IS NULL")
+			sql.WriteString(" WHERE delete_time = 0")
 		}
 	}
 
@@ -2033,9 +2090,9 @@ func (qb *Model) Dec(ctx context.Context, field string, value interface{}) *Quer
 	// 默认添加软删除条件（只有调用WithTrashed时才不包含）
 	if !qb.withTrashed {
 		if len(qb.where) > 0 {
-			sql.WriteString(" AND delete_time IS NULL")
+			sql.WriteString(" AND delete_time = 0")
 		} else {
-			sql.WriteString(" WHERE delete_time IS NULL")
+			sql.WriteString(" WHERE delete_time = 0")
 		}
 	}
 
@@ -2071,6 +2128,9 @@ func (qb *Model) WithTrashed() *Model {
 // Delete 删除数据（支持软删除）
 // Delete 删除数据（自动判断是否有delete_time字段，有则软删除，没有则真实删除）
 func (qb *Model) Delete(ctx context.Context) *QueryResult {
+	if qb.buildErr != nil {
+		return &QueryResult{data: nil, err: qb.buildErr, query: "", args: nil}
+	}
 	// 首先检查表是否有delete_time字段
 	// 使用缓存的字段检测结果
 	if qb.hasDeleteTimeField(ctx) {
@@ -2078,7 +2138,7 @@ func (qb *Model) Delete(ctx context.Context) *QueryResult {
 		if qb.updateData == nil {
 			qb.updateData = make(map[string]interface{})
 		}
-		qb.updateData["delete_time"] = "NOW()"
+		qb.updateData["delete_time"] = "UNIX_TIMESTAMP(NOW(3)) * 1000"
 
 		// 使用Update方法进行软删除
 		return qb.Update(ctx)
@@ -2137,6 +2197,9 @@ func (qb *Model) Delete(ctx context.Context) *QueryResult {
 // buildQuery 构建SQL查询（修改以支持软删除）
 // buildQuery 构建SQL查询（修改：默认不添加软删除过滤，只有WithTrashed时才查询软删除数据）
 func (qb *Model) buildQuery(ctx context.Context) (string, []interface{}) {
+	if qb.buildErr != nil {
+		return "", nil
+	}
 	var sql strings.Builder
 	var args []interface{}
 
@@ -2191,10 +2254,10 @@ func (qb *Model) buildQuery(ctx context.Context) (string, []interface{}) {
 	// 只有未调用WithTrashed且表有delete_time字段时才添加软删除条件
 	if !qb.withTrashed && qb.hasDeleteTimeField(ctx) {
 		if len(conditions) > 0 {
-			deleteCondition := " AND delete_time IS NULL"
+			deleteCondition := " AND delete_time = 0"
 			conditions = append(conditions, deleteCondition)
 		} else {
-			deleteCondition := "delete_time IS NULL"
+			deleteCondition := "delete_time = 0"
 			conditions = append(conditions, deleteCondition)
 		}
 	}

@@ -1,6 +1,7 @@
 package gvalid
 
 import (
+	"encoding/base64"
 	"fmt"
 	"reflect"
 	"regexp"
@@ -380,6 +381,18 @@ func (mv *MessageValidator) convertDefaultError(err validator.FieldError) string
 		return fmt.Sprintf("%s必须是4位数字", chineseFieldName)
 	case "idCard":
 		return fmt.Sprintf("%s格式不正确", chineseFieldName)
+	case "bankAccount":
+		return fmt.Sprintf("%s格式不正确", chineseFieldName)
+	case "regexp":
+		return fmt.Sprintf("%s格式不正确", chineseFieldName)
+	case "gtefield", "ltefield", "gtfield", "ltfield":
+		return fmt.Sprintf("%s与关联字段比较不满足要求", chineseFieldName)
+	case "eqfield", "nefield":
+		return fmt.Sprintf("%s与关联字段不一致", chineseFieldName)
+	case "required_if", "required_unless", "required_with", "required_without":
+		return fmt.Sprintf("%s为必填项", chineseFieldName)
+	case "datetime":
+		return fmt.Sprintf("%s日期时间格式不正确", chineseFieldName)
 	default:
 		return fmt.Sprintf("%s验证失败：%s", chineseFieldName, tag)
 	}
@@ -483,5 +496,25 @@ func registerCustomRules(v *validator.Validate) {
 	// 验证码验证（4位数字）
 	v.RegisterValidation("captchaCode", func(fl validator.FieldLevel) bool {
 		return regexp.MustCompile(`^\d{4}$`).MatchString(fl.Field().String())
+	})
+
+	// 自定义正则（validate:"regexp=^\\d+$" 或 regexp=b64:BASE64）
+	v.RegisterValidation("regexp", func(fl validator.FieldLevel) bool {
+		pattern := fl.Param()
+		if pattern == "" {
+			return true
+		}
+		if strings.HasPrefix(pattern, "b64:") {
+			dec, err := base64.StdEncoding.DecodeString(pattern[4:])
+			if err != nil {
+				return false
+			}
+			pattern = string(dec)
+		}
+		re, err := regexp.Compile(pattern)
+		if err != nil {
+			return false
+		}
+		return re.MatchString(fl.Field().String())
 	})
 }

@@ -57,7 +57,7 @@ func TestParseImportRowsMixed(t *testing.T) {
 		{"brand_name": "", "status": "1"},
 		{"brand_name": "B", "status": "坏值"},
 	}
-	valid, errs := ParseImportRows(mapping, raw, []int{4, 5, 6}, nil, nil)
+	valid, _, errs := ParseImportRows(mapping, raw, []int{4, 5, 6}, nil, nil, nil)
 	if len(valid) != 1 {
 		t.Fatalf("valid rows want 1 got %d", len(valid))
 	}

@@ -11,13 +11,34 @@ type ImportExecuteOpts struct {
 	UserId        int64
 	DeptId        int64
 	DuplicateMode string // skip | stop | update
+	ExcelRowNums  []int  // 与 rows 对齐的 Excel 行号（可选）
+	TaskId        uint64 // 导入任务 ID（>0 时写入变更快照）
+}
+
+// ImportRowUpdateMeta 更新行上下文（变更快照）
+type ImportRowUpdateMeta struct {
+	ExcelRow int32
+	TaskId   uint64
+}
+
+// ImportContextWriter 支持带行号的更新（可选，由 common DBImportExecutor 实现）
+type ImportContextWriter interface {
+	ImportDBWriter
+	UpdateRowWithContext(table string, id int64, data map[string]interface{}, meta ImportRowUpdateMeta) error
+}
+
+// ImportSkipDetail 跳过/失败行明细
+type ImportSkipDetail struct {
+	Row     int32
+	Message string
 }
 
 // ImportExecuteStats 导入结果统计
 type ImportExecuteStats struct {
-	InsertRows int32
-	UpdateRows int32
-	SkipRows   int32
+	InsertRows  int32
+	UpdateRows  int32
+	SkipRows    int32
+	SkipDetails []ImportSkipDetail
 }
 
 // ImportDBWriter 导入写库（由 common 服务实现）
@@ -44,17 +65,25 @@ func ExecuteImportRows(mapping *ImportMapping, rows []map[string]interface{}, op
 
 	for i, row := range rows {
 		rowNo := i + 1
+		excelRow := int32(rowNo)
+		if i < len(opts.ExcelRowNums) && opts.ExcelRowNums[i] > 0 {
+			excelRow = int32(opts.ExcelRowNums[i])
+		}
 		action, existingID, err := resolveImportAction(importMode, dupMode, dupKeys, table, opts.BusinessId, row, w)
 		if err != nil {
-			return stats, fmt.Errorf("第 %d 行: %w", rowNo, err)
+			return stats, fmt.Errorf("第 %d 行: %w", excelRow, err)
 		}
 		switch action {
 		case importActionSkip:
 			stats.SkipRows++
+			stats.SkipDetails = append(stats.SkipDetails, ImportSkipDetail{
+				Row:     excelRow,
+				Message: "重复数据，已跳过",
+			})
 		case importActionInsert:
 			data := prepareImportRowData(row, opts, w, table, false)
 			if err := w.InsertRow(table, data); err != nil {
-				handled, handleErr := handleInsertConflict(table, dupKeys, dupMode, rowNo, row, opts, w, &stats)
+				handled, handleErr := handleInsertConflict(table, dupKeys, dupMode, int(excelRow), row, opts, w, &stats)
 				if handleErr != nil {
 					return stats, handleErr
 				}
@@ -62,19 +91,30 @@ func ExecuteImportRows(mapping *ImportMapping, rows []map[string]interface{}, op
 					continue
 				}
 				if dupMode == "stop" {
-					return stats, fmt.Errorf("第 %d 行写入失败: %v", rowNo, err)
+					return stats, fmt.Errorf("第 %d 行写入失败: %v", excelRow, err)
 				}
 				stats.SkipRows++
+				stats.SkipDetails = append(stats.SkipDetails, ImportSkipDetail{
+					Row:     excelRow,
+					Message: fmt.Sprintf("写入失败: %v", err),
+				})
 				continue
 			}
 			stats.InsertRows++
 		case importActionUpdate:
 			data := prepareImportRowData(row, opts, w, table, true)
-			if err := w.UpdateRow(table, existingID, data); err != nil {
+			if err := updateImportRow(w, table, existingID, data, ImportRowUpdateMeta{
+				ExcelRow: excelRow,
+				TaskId:   opts.TaskId,
+			}); err != nil {
 				if dupMode == "stop" {
-					return stats, fmt.Errorf("第 %d 行更新失败: %v", rowNo, err)
+					return stats, fmt.Errorf("第 %d 行更新失败: %v", excelRow, err)
 				}
 				stats.SkipRows++
+				stats.SkipDetails = append(stats.SkipDetails, ImportSkipDetail{
+					Row:     excelRow,
+					Message: fmt.Sprintf("更新失败: %v", err),
+				})
 				continue
 			}
 			stats.UpdateRows++
@@ -160,7 +200,11 @@ func handleInsertConflict(table string, dupKeys []string, dupMode string, rowNo 
 		return false, nil
 	}
 	data := prepareImportRowData(row, opts, w, table, true)
-	if err := w.UpdateRow(table, existingID, data); err != nil {
+	excelRow := int32(rowNo)
+	if err := updateImportRow(w, table, existingID, data, ImportRowUpdateMeta{
+		ExcelRow: excelRow,
+		TaskId:   opts.TaskId,
+	}); err != nil {
 		if dupMode == "stop" {
 			return false, fmt.Errorf("第 %d 行更新失败: %v", rowNo, err)
 		}
@@ -169,6 +213,13 @@ func handleInsertConflict(table string, dupKeys []string, dupMode string, rowNo 
 	}
 	stats.UpdateRows++
 	return true, nil
+}
+
+func updateImportRow(w ImportDBWriter, table string, id int64, data map[string]interface{}, meta ImportRowUpdateMeta) error {
+	if cw, ok := w.(ImportContextWriter); ok && meta.TaskId > 0 {
+		return cw.UpdateRowWithContext(table, id, data, meta)
+	}
+	return w.UpdateRow(table, id, data)
 }
 
 func prepareImportRowData(row map[string]interface{}, opts ImportExecuteOpts, w ImportDBWriter, table string, forUpdate bool) map[string]interface{} {

@@ -21,8 +21,9 @@ type ImportMapping struct {
 }
 
 type ImportMappingMeta struct {
-	ModuleName   string `json:"module_name,omitempty"`
-	GenerateCode int64  `json:"generatecode_id,omitempty"`
+	ModuleName       string `json:"module_name,omitempty"`
+	GenerateCode     int64  `json:"generatecode_id,omitempty"`
+	EnableImportDiff bool   `json:"enable_import_diff,omitempty"`
 }
 
 // ImportColumn 单列映射
@@ -42,6 +43,8 @@ type ImportColumn struct {
 	DicGroupID       int64    `json:"dic_group_id,omitempty"`
 	DefaultValue     string   `json:"default_value,omitempty"`
 	Example          string   `json:"example,omitempty"`
+	RegionLevel      int      `json:"region_level,omitempty"`
+	ParentField      string   `json:"parent_field,omitempty"`
 }
 
 // GenerateCodeField 代码生成器字段元数据（develop 传入）
@@ -49,6 +52,7 @@ type GenerateCodeField struct {
 	Name          string
 	Field         string
 	Formtype      string
+	Searchtype    string
 	Datatable     string
 	Datatablename string
 	DicGroupID    int64
@@ -58,6 +62,7 @@ type GenerateCodeField struct {
 	OptionValue   string
 	DefValue      string
 	FieldWeigh    int64
+	IsSensitive   int64
 }
 
 var defaultImportSkipFields = map[string]struct{}{
@@ -148,10 +153,39 @@ func BuildImportMapping(bizType, targetTable, moduleName string, generateCodeID 
 	return mapping, nil
 }
 
+func hasEnumOptionValue(optionValue string) bool {
+	return strings.Contains(optionValue, "=") && strings.Contains(optionValue, ",")
+}
+
+func resolveRegionImportFieldType(f GenerateCodeField) string {
+	ft := strings.ToLower(strings.TrimSpace(f.Formtype))
+	st := strings.ToLower(strings.TrimSpace(f.Searchtype))
+	if ft == "region" && st != "" {
+		switch st {
+		case "region_city":
+			return "region_city"
+		case "region_area":
+			return "region_area"
+		default:
+			return "region"
+		}
+	}
+	switch ft {
+	case "region_province", "region":
+		return "region"
+	case "region_city":
+		return "region_city"
+	case "region_area":
+		return "region_area"
+	default:
+		return normalizeImportFieldType(f.Formtype)
+	}
+}
+
 func normalizeImportFieldType(formtype string) string {
 	switch formtype {
 	case "belongto", "belongDic", "radio", "select", "switch", "checkbox", "textarea",
-		"text", "number", "float", "date", "datetime", "time", "region":
+		"text", "number", "float", "date", "datetime", "time", "region", "region_province", "region_city", "region_area":
 		return formtype
 	default:
 		return "text"

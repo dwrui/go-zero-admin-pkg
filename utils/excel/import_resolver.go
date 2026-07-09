@@ -14,3 +14,8 @@ type BelongToResolver interface {
 type DicResolver interface {
 	ResolveBelongDic(col ImportColumn, displayValue string) (string, error)
 }
+
+// RegionResolver 省市区解析（displayValue → region_code）
+type RegionResolver interface {
+	ResolveRegion(col ImportColumn, displayValue string, parentRegionCode int64) (int64, error)
+}
