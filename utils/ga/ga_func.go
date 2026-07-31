@@ -4,7 +4,9 @@ import (
 	"database/sql"
 	"fmt"
 	"reflect"
+	"strconv"
 	"strings"
+	"time"
 	"unicode"
 
 	"github.com/dwrui/go-zero-admin-pkg/utils/tools/gmd5"
@@ -149,10 +151,29 @@ func FormatNullDate(nt sql.NullTime) string {
 }
 
 // 如果你需要 datetime 格式：
-func FormatNullTime(nt sql.NullTime) string {
-	if nt.Valid {
-		return nt.Time.Format("2006-01-02 15:04:05")
+func FormatTime(layout string, val any) string {
+	switch v := val.(type) {
+	case sql.NullTime:
+		if v.Valid {
+			return v.Time.Format(layout)
+		}
+		return v.Time.Format(layout)
+	case int64:
+		var t time.Time
+		if v > 9999999999 {
+			t = time.UnixMilli(v)
+		} else {
+			t = time.Unix(v, 0)
+		}
+		return t.Format(layout)
+	case string:
+		ts, err := strconv.ParseInt(v, 10, 64)
+		if err != nil {
+			return ""
+		}
+		return FormatTime(layout, ts)
 	}
+
 	return ""
 }
 

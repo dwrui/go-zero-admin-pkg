@@ -2148,9 +2148,31 @@ func (qb *Model) Delete(ctx context.Context) *QueryResult {
 	var sql strings.Builder
 	var args []interface{}
 
-	sql.WriteString("DELETE FROM ")
-	sql.WriteString(qb.table)
-
+	if qb.alias != "" {
+		sql.WriteString("DELETE ")
+		sql.WriteString(qb.alias)
+		sql.WriteString(" FROM ")
+		sql.WriteString(qb.table)
+		sql.WriteString(" AS ")
+		sql.WriteString(qb.alias)
+	} else {
+		sql.WriteString("DELETE FROM ")
+		sql.WriteString(qb.table)
+	}
+	// JOIN 子句
+	for _, join := range qb.joins {
+		sql.WriteString(" ")
+		sql.WriteString(join.joinType)
+		sql.WriteString(" JOIN ")
+		sql.WriteString(join.table)
+		if join.alias != "" {
+			sql.WriteString(" AS ")
+			sql.WriteString(join.alias)
+		}
+		sql.WriteString(" ON ")
+		sql.WriteString(join.on)
+		args = append(args, join.args...)
+	}
 	// 添加WHERE条件
 	if len(qb.where) > 0 {
 		sql.WriteString(" WHERE ")

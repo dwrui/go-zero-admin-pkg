@@ -462,7 +462,7 @@ func (mv *MessageValidator) getFieldName(fieldName string) string {
 func registerCustomRules(v *validator.Validate) {
 	// 中文姓名验证
 	v.RegisterValidation("chineseName", func(fl validator.FieldLevel) bool {
-		return regexp.MustCompile(`^[\u4e00-\u9fa5]{2,10}$`).MatchString(fl.Field().String())
+		return regexp.MustCompile("^[\u4e00-\u9fa5]{2,10}$").MatchString(fl.Field().String())
 	})
 
 	// 身份证号验证

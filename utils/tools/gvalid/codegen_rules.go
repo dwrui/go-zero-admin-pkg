@@ -190,37 +190,37 @@ func defaultValidateMessage(label, tagKey, fullTag string) string {
 		param = fullTag[idx+1:]
 	}
 	templates := map[string]string{
-		"required":      "请输入%s",
-		"email":         "%s格式不正确",
-		"url":           "%s必须是有效的URL",
-		"min":           "%s长度不能小于%s",
-		"max":           "%s长度不能超过%s",
-		"len":           "%s长度必须为%s",
-		"numeric":       "%s必须为数字",
-		"number":        "%s必须为数字",
-		"alpha":         "%s只能包含字母",
-		"alphanum":      "%s只能包含字母和数字",
-		"uuid":          "%s必须是有效的UUID",
-		"ip":            "%s必须是有效的IP地址",
-		"ipv4":          "%s必须是有效的IPv4地址",
-		"datetime":      "%s日期时间格式不正确",
-		"oneof":         "%s取值无效",
-		"chinaMobile":   "%s必须是有效的中国手机号",
-		"idCard":        "%s格式不正确",
-		"bankAccount":   "%s格式不正确",
-		"chineseName":   "%s必须是2-10个汉字",
-		"username":      "%s格式不正确",
-		"password":      "%s格式不正确",
-		"regexp":        "%s格式不正确",
-		"gtefield":      "%s不能小于关联字段",
-		"ltefield":      "%s不能大于关联字段",
-		"gtfield":       "%s必须大于关联字段",
-		"ltfield":       "%s必须小于关联字段",
-		"eqfield":       "%s与关联字段不一致",
-		"nefield":       "%s不能与关联字段相同",
-		"required_if":   "%s为必填项",
-		"required_unless": "%s为必填项",
-		"required_with": "%s为必填项",
+		"required":         "请输入%s",
+		"email":            "%s格式不正确",
+		"url":              "%s必须是有效的URL",
+		"min":              "%s长度不能小于%s",
+		"max":              "%s长度不能超过%s",
+		"len":              "%s长度必须为%s",
+		"numeric":          "%s必须为数字",
+		"number":           "%s必须为数字",
+		"alpha":            "%s只能包含字母",
+		"alphanum":         "%s只能包含字母和数字",
+		"uuid":             "%s必须是有效的UUID",
+		"ip":               "%s必须是有效的IP地址",
+		"ipv4":             "%s必须是有效的IPv4地址",
+		"datetime":         "%s日期时间格式不正确",
+		"oneof":            "%s取值无效",
+		"chinaMobile":      "%s必须是有效的中国手机号",
+		"idCard":           "%s格式不正确",
+		"bankAccount":      "%s格式不正确",
+		"chineseName":      "%s必须是2-10个汉字",
+		"username":         "%s格式不正确",
+		"password":         "%s格式不正确",
+		"regexp":           "%s格式不正确",
+		"gtefield":         "%s不能小于关联字段",
+		"ltefield":         "%s不能大于关联字段",
+		"gtfield":          "%s必须大于关联字段",
+		"ltfield":          "%s必须小于关联字段",
+		"eqfield":          "%s与关联字段不一致",
+		"nefield":          "%s不能与关联字段相同",
+		"required_if":      "%s为必填项",
+		"required_unless":  "%s为必填项",
+		"required_with":    "%s为必填项",
 		"required_without": "%s为必填项",
 	}
 	if tpl, ok := templates[tagKey]; ok {
@@ -308,7 +308,7 @@ func BuildFormItemRulesAttr(jsonField, label string, required int64, rulesRaw, f
 		case "bankAccount":
 			parts = append(parts, fmt.Sprintf("{match:/^\\d{16,19}$/,message:'%s'}", msg))
 		case "chineseName":
-			parts = append(parts, fmt.Sprintf("{match:/^[\\u4e00-\\u9fa5]{2,10}$/,message:'%s'}", msg))
+			parts = append(parts, fmt.Sprintf("{match:/^[\\\\\\\\u4e00-\\\\\\\\u9fa5]{2,10}$/,message:'%s'}", msg))
 		case "username":
 			parts = append(parts, fmt.Sprintf("{match:/^[a-zA-Z0-9_]{3,20}$/,message:'%s'}", msg))
 		case "url":
