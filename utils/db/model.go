@@ -1,3 +1,22 @@
+// Package db 提供链式 SQL 构建器 Model，支持查询、写入、分页、软删除与事务。
+//
+// 基本用法：
+//
+//	db.Model("ga_xxx").Where("id", 1).Find(ctx, &row)
+//
+// 事务用法（事务内须使用 s.Model，每次调用返回独立 builder，共享同一 session）：
+//
+//	db.Trans(ctx, func(ctx context.Context, s *db.Session) error {
+//	    if err := s.Model("ga_xxx").Where("id", id).Find(ctx, &row).GetError(); err != nil {
+//	        return err
+//	    }
+//	    return s.Model("ga_xxx").Where("id", id).Update(ctx, data).GetError()
+//	})
+//
+// 软删除约定（表含 delete_time 字段时自动生效）：
+//   - 未删除：delete_time = 0
+//   - 已删除：delete_time = 毫秒时间戳
+//   - Delete 写时间戳；Restore 置 0；ForceDelete 物理删除
 package db
 
 import (
@@ -5,6 +24,7 @@ import (
 	"database/sql"
 	"fmt"
 	"reflect"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -16,37 +36,35 @@ import (
 	"github.com/zeromicro/go-zero/core/stores/sqlx"
 )
 
-// Model 链式查询构建器
+// Model 链式 SQL 构建器。通过 DBManager.Model 或 Session.Model 创建；
+// 同一 Session 下多次 Model() 彼此独立，但共享事务连接。
 type Model struct {
-	db            *DBManager
-	session       sqlx.Session
-	table         string
-	alias         string
-	joins         []joinClause
-	where         []whereClause
-	groupBy       []string
-	having        []whereClause
-	orderBy       []orderClause
-	limit         int
-	offset        int
-	page          int
-	pageSize      int
-	lockMode      string
-	distinct      bool
-	fields        []string
-	sqlFetch      bool
-	data          interface{}
-	withTrashed   bool
-	updateData    map[string]interface{}
-	incData       map[string]interface{}
-	decData       map[string]interface{}
-	hasDeleteTime *bool
-	primaryKey    string
-	buildErr      error
-	cacheEnabled  bool
-	cacheTTL      time.Duration
-	cachePrefix   string
-	skipCache     bool
+	db      *DBManager
+	session sqlx.Session // 非 nil 时读写均走事务 session
+	table   string
+	alias   string
+	joins   []joinClause
+	where   []whereClause
+	groupBy []string
+	having  []whereClause
+	orderBy []orderClause
+	limit   int
+	offset  int
+	page    int
+	pageSize int
+	lockMode string
+	distinct bool
+	fields   []string
+	sqlFetch bool       // true 时仅打印 SQL，不执行（开发调试）
+	data     interface{} // Insert/Update 等待写入数据
+	withTrashed bool     // 包含已软删记录（不过滤 delete_time）
+	onlyTrashed bool     // 仅操作已软删记录（delete_time > 0）
+	updateData  map[string]interface{}
+	incData     map[string]interface{}
+	decData     map[string]interface{}
+	hasDeleteTime *bool // 测试覆盖用；生产环境走 DBManager 表元数据缓存
+	primaryKey    string // SetPrimaryKey 手动指定，否则从表元数据读取
+	buildErr      error  // Where 等链式构建阶段的首个错误
 }
 
 // execCtx 执行SQL（支持事务）
@@ -160,7 +178,8 @@ type orderClause struct {
 	dir   string // ASC, DESC
 }
 
-// QueryResult 查询结果包装器
+// QueryResult 终结型查询/写入结果。Find/Select/Count/Insert/Update/Delete 等返回此类型，
+// 不可继续链式调用；通过 GetError、GetData、GetLastId 等读取结果。
 type QueryResult struct {
 	data   interface{}
 	err    error
@@ -168,6 +187,8 @@ type QueryResult struct {
 	args   []interface{}
 	lastId string
 }
+
+// PaginateResult 分页查询结果
 type PaginateResult struct {
 	Items interface{}
 	Page  int
@@ -226,7 +247,7 @@ func (r *QueryResult) GetData() interface{} {
 	return r.data
 }
 
-// GetData 获取查询结果数据
+// GetLastId 获取最后一次 Insert 的自增主键（Update 不填充此字段）
 func (r *QueryResult) GetLastId() string {
 	return r.lastId
 }
@@ -854,7 +875,7 @@ func (qb *Model) LockInShareMode() *Model {
 	return qb
 }
 
-// Find 查询单条记录
+// Find 查询单条记录（自动 Limit 1）。返回 *QueryResult，不可再链式 Update。
 func (qb *Model) Find(ctx context.Context, dest interface{}) *QueryResult {
 	if qb.buildErr != nil {
 		return &QueryResult{data: dest, err: qb.buildErr}
@@ -874,7 +895,7 @@ func (qb *Model) Find(ctx context.Context, dest interface{}) *QueryResult {
 		}
 	}
 
-	err := qb.db.QueryRow(ctx, dest, query, args...)
+	err := qb.queryRowCtx(ctx, dest, query, args...)
 
 	if err != nil && err == sql.ErrNoRows {
 		err = nil
@@ -905,7 +926,7 @@ func (qb *Model) Select(ctx context.Context, dest interface{}) *QueryResult {
 			args:  args,
 		}
 	}
-	err := qb.db.Query(ctx, dest, query, args...)
+	err := qb.queryRowsCtx(ctx, dest, query, args...)
 	if err != nil && err == sql.ErrNoRows {
 		err = nil
 		dest = nil
@@ -967,7 +988,16 @@ func (qb *Model) Paginate(ctx context.Context, page, pageSize int, dest interfac
 		}
 	}
 
-	total := countResult.data.(int64)
+	total, ok := countResult.data.(int64)
+	if !ok {
+		return &PaginateResult{
+			Items: []interface{}{},
+			Page:  page,
+			Size:  pageSize,
+			Total: 0,
+			Error: fmt.Errorf("count result type error"),
+		}
+	}
 	// 如果总数为0，直接返回空结果
 	if total == 0 {
 		return &PaginateResult{
@@ -1020,7 +1050,7 @@ func (qb *Model) Count(ctx context.Context) *QueryResult {
 		}
 	}
 	var count int64
-	err := qb.db.QueryRow(ctx, &count, query, args...)
+	err := qb.queryRowCtx(ctx, &count, query, args...)
 	if err != nil && err == sql.ErrNoRows {
 		err = nil
 		count = 0
@@ -1077,7 +1107,7 @@ func (qb *Model) Raw(ctx context.Context, dest interface{}, query string, args .
 		}
 	}
 
-	err := qb.db.Query(ctx, dest, query, args...)
+	err := qb.queryRowsCtx(ctx, dest, query, args...)
 	if err != nil && err == sql.ErrNoRows {
 		err = nil
 		dest = nil
@@ -1105,7 +1135,7 @@ func (qb *Model) RawExec(ctx context.Context, query string, args ...interface{})
 		}
 	}
 
-	result, err := qb.db.Exec(ctx, query, args...)
+	result, err := qb.execCtx(ctx, query, args...)
 	if err != nil {
 		return &QueryResult{
 			data:  nil,
@@ -1149,7 +1179,7 @@ func (qb *Model) Sum(ctx context.Context, field string) *QueryResult {
 	}
 
 	var sum sql.NullFloat64
-	err := qb.db.QueryRow(ctx, &sum, query, args...)
+	err := qb.queryRowCtx(ctx, &sum, query, args...)
 
 	var result float64
 	if err == nil && sum.Valid {
@@ -1183,7 +1213,7 @@ func (qb *Model) Value(ctx context.Context, field string) *QueryResult {
 	}
 
 	var value string
-	err := qb.db.QueryRow(ctx, &value, query, args...)
+	err := qb.queryRowCtx(ctx, &value, query, args...)
 	if err != nil && err == sql.ErrNoRows {
 		err = nil
 		value = ""
@@ -1218,56 +1248,56 @@ func (qb *Model) Column(ctx context.Context, field string, dest interface{}) *Qu
 	switch d := dest.(type) {
 	case *[]string:
 		var stringResult []string
-		err = qb.db.QueryRows(ctx, &stringResult, query, args...)
+		err = qb.queryRowsCtx(ctx, &stringResult, query, args...)
 		if err == nil {
 			*d = stringResult
 			result = stringResult
 		}
 	case *[]int:
 		var intResult []int
-		err = qb.db.QueryRows(ctx, &intResult, query, args...)
+		err = qb.queryRowsCtx(ctx, &intResult, query, args...)
 		if err == nil {
 			*d = intResult
 			result = intResult
 		}
 	case *[]int64:
 		var int64Result []int64
-		err = qb.db.QueryRows(ctx, &int64Result, query, args...)
+		err = qb.queryRowsCtx(ctx, &int64Result, query, args...)
 		if err == nil {
 			*d = int64Result
 			result = int64Result
 		}
 	case *[]uint:
 		var intResult []uint
-		err = qb.db.QueryRows(ctx, &intResult, query, args...)
+		err = qb.queryRowsCtx(ctx, &intResult, query, args...)
 		if err == nil {
 			*d = intResult
 			result = intResult
 		}
 	case *[]uint64:
 		var int64Result []uint64
-		err = qb.db.QueryRows(ctx, &int64Result, query, args...)
+		err = qb.queryRowsCtx(ctx, &int64Result, query, args...)
 		if err == nil {
 			*d = int64Result
 			result = int64Result
 		}
 	case *[]float64:
 		var float64Result []float64
-		err = qb.db.QueryRows(ctx, &float64Result, query, args...)
+		err = qb.queryRowsCtx(ctx, &float64Result, query, args...)
 		if err == nil {
 			*d = float64Result
 			result = float64Result
 		}
 	case *[]bool:
 		var boolResult []bool
-		err = qb.db.QueryRows(ctx, &boolResult, query, args...)
+		err = qb.queryRowsCtx(ctx, &boolResult, query, args...)
 		if err == nil {
 			*d = boolResult
 			result = boolResult
 		}
 	case *[]interface{}:
 		var interfaceResult []interface{}
-		err = qb.db.QueryRows(ctx, &interfaceResult, query, args...)
+		err = qb.queryRowsCtx(ctx, &interfaceResult, query, args...)
 		if err == nil {
 			*d = interfaceResult
 			result = interfaceResult
@@ -1275,7 +1305,7 @@ func (qb *Model) Column(ctx context.Context, field string, dest interface{}) *Qu
 	default:
 		// 默认情况下，使用[]string类型
 		var stringResult []string
-		err = qb.db.QueryRows(ctx, &stringResult, query, args...)
+		err = qb.queryRowsCtx(ctx, &stringResult, query, args...)
 		result = stringResult
 	}
 	// 如果查询出错，返回空结果
@@ -1362,7 +1392,7 @@ func (qb *Model) Insert(ctx context.Context, data ...interface{}) *QueryResult {
 	fields := make([]string, 0, len(dataMap))
 	placeholders := make([]string, 0, len(dataMap))
 
-	for field := range dataMap {
+	for _, field := range sortedMapKeys(dataMap) {
 		fields = append(fields, quoteField(field))
 		placeholders = append(placeholders, "?")
 		args = append(args, dataMap[field])
@@ -1387,7 +1417,7 @@ func (qb *Model) Insert(ctx context.Context, data ...interface{}) *QueryResult {
 		}
 	}
 
-	result, err := qb.db.Exec(ctx, query, args...)
+	result, err := qb.execCtx(ctx, query, args...)
 	if err != nil {
 		return &QueryResult{
 			data:  result,
@@ -1460,7 +1490,7 @@ func (qb *Model) Save(ctx context.Context, data ...interface{}) *QueryResult {
 	fields := make([]string, 0, len(dataMap))
 	placeholders := make([]string, 0, len(dataMap))
 
-	for field := range dataMap {
+	for _, field := range sortedMapKeys(dataMap) {
 		fields = append(fields, quoteField(field))
 		placeholders = append(placeholders, "?")
 		args = append(args, dataMap[field])
@@ -1471,7 +1501,7 @@ func (qb *Model) Save(ctx context.Context, data ...interface{}) *QueryResult {
 	sql.WriteString(") ON DUPLICATE KEY UPDATE ")
 
 	updates := make([]string, 0, len(dataMap))
-	for field := range dataMap {
+	for _, field := range sortedMapKeys(dataMap) {
 		qf := quoteField(field)
 		updates = append(updates, fmt.Sprintf("%s = VALUES(%s)", qf, qf))
 	}
@@ -1599,6 +1629,11 @@ func (qb *Model) UpdateBatch(ctx context.Context, data ...interface{}) *QueryRes
 	}
 	sqlStr += strings.Join(placeholders, ", ")
 	sqlStr += ")"
+	if qb.hasDeleteTimeField(ctx) && !qb.withTrashed && !qb.onlyTrashed {
+		sqlStr += " AND delete_time = 0"
+	} else if qb.hasDeleteTimeField(ctx) && qb.onlyTrashed {
+		sqlStr += " AND delete_time > 0"
+	}
 
 	query := sqlStr
 	args = append(caseWhenArgs, ids...)
@@ -1609,7 +1644,7 @@ func (qb *Model) UpdateBatch(ctx context.Context, data ...interface{}) *QueryRes
 		return &QueryResult{data: int64(0), err: nil, query: query, args: args}
 	}
 
-	result, err := qb.db.Exec(ctx, query, args...)
+	result, err := qb.execCtx(ctx, query, args...)
 	if err != nil {
 		return &QueryResult{data: nil, err: err, query: query, args: args}
 	}
@@ -1686,10 +1721,7 @@ func (qb *Model) InsertAll(ctx context.Context, data ...interface{}) *QueryResul
 	sql.WriteString(" (")
 
 	// 获取所有字段名
-	fields := make([]string, 0, len(dataMaps[0]))
-	for field := range dataMaps[0] {
-		fields = append(fields, field)
-	}
+	fields := sortedMapKeys(dataMaps[0])
 
 	sql.WriteString(strings.Join(fields, ", "))
 	sql.WriteString(") VALUES ")
@@ -1736,8 +1768,7 @@ func (qb *Model) InsertAll(ctx context.Context, data ...interface{}) *QueryResul
 	}
 }
 
-// Update 数据更新
-// Update 数据更新
+// Update 按 Where 条件更新；软删 Delete 内部亦走此方法。返回 *QueryResult，不含 LastInsertId。
 func (qb *Model) Update(ctx context.Context, data ...interface{}) *QueryResult {
 	if qb.buildErr != nil {
 		return &QueryResult{data: nil, err: qb.buildErr, query: "", args: nil}
@@ -1825,11 +1856,12 @@ func (qb *Model) Update(ctx context.Context, data ...interface{}) *QueryResult {
 	sets := make([]string, 0, len(updateData)+len(qb.incData)+len(qb.decData))
 
 	// 普通字段更新（支持表达式）
-	for field, value := range updateData {
+	for _, field := range sortedMapKeys(updateData) {
+		value := updateData[field]
 		qf := quoteField(field)
 		if str, ok := value.(string); ok {
 			// 支持MySQL函数表达式和字段表达式
-			if str == "NOW()" || str == "CURRENT_TIMESTAMP" ||
+			if str == "NOW()" || str == "CURRENT_TIMESTAMP" || str == softDeleteTimeExpr ||
 				strings.Contains(str, field+" +") || strings.Contains(str, field+" -") ||
 				strings.Contains(str, field+" *") || strings.Contains(str, field+" /") {
 				sets = append(sets, fmt.Sprintf("%s = %s", qf, str))
@@ -1845,25 +1877,8 @@ func (qb *Model) Update(ctx context.Context, data ...interface{}) *QueryResult {
 
 	sql.WriteString(strings.Join(sets, ", "))
 
-	// 添加WHERE条件
-	if len(qb.where) > 0 {
-		sql.WriteString(" WHERE ")
-		for i, where := range qb.where {
-			if i > 0 || where.operator != "" {
-				sql.WriteString(" ")
-				sql.WriteString(where.operator)
-				sql.WriteString(" ")
-			}
-			if where.field != "" {
-				sql.WriteString(quoteField(where.field))
-				sql.WriteString(" ")
-				sql.WriteString(where.cond)
-			} else {
-				sql.WriteString(quoteWhereCond(where.cond))
-			}
-			args = append(args, where.args...)
-		}
-	}
+	hasWhere := qb.buildWhereSQL(&sql, &args)
+	qb.writeSoftDeleteWhere(ctx, &sql, hasWhere)
 
 	query := sql.String()
 
@@ -1888,13 +1903,11 @@ func (qb *Model) Update(ctx context.Context, data ...interface{}) *QueryResult {
 			args:  args,
 		}
 	}
-	lastInsertID, err := result.LastInsertId()
 	return &QueryResult{
-		data:   result,
-		err:    err,
-		query:  query,
-		args:   args,
-		lastId: ga.String(lastInsertID),
+		data:  result,
+		err:   err,
+		query: query,
+		args:  args,
 	}
 }
 
@@ -1953,8 +1966,8 @@ func (qb *Model) Replace(ctx context.Context, data ...interface{}) *QueryResult 
 	fields := make([]string, 0, len(dataMap))
 	placeholders := make([]string, 0, len(dataMap))
 
-	for field := range dataMap {
-		fields = append(fields, field)
+	for _, field := range sortedMapKeys(dataMap) {
+		fields = append(fields, quoteField(field))
 		placeholders = append(placeholders, "?")
 		args = append(args, dataMap[field])
 	}
@@ -1978,7 +1991,7 @@ func (qb *Model) Replace(ctx context.Context, data ...interface{}) *QueryResult 
 		}
 	}
 
-	result, err := qb.db.Exec(ctx, query, args...)
+	result, err := qb.execCtx(ctx, query, args...)
 	return &QueryResult{
 		data:  result,
 		err:   err,
@@ -2001,34 +2014,8 @@ func (qb *Model) Inc(ctx context.Context, field string, value interface{}) *Quer
 	sql.WriteString(" + ?")
 	args = append(args, value)
 
-	// 添加WHERE条件
-	if len(qb.where) > 0 {
-		sql.WriteString(" WHERE ")
-		for i, where := range qb.where {
-			if i > 0 || where.operator != "" {
-				sql.WriteString(" ")
-				sql.WriteString(where.operator)
-				sql.WriteString(" ")
-			}
-			if where.field != "" {
-				sql.WriteString(quoteField(where.field))
-				sql.WriteString(" ")
-				sql.WriteString(where.cond)
-			} else {
-				sql.WriteString(quoteWhereCond(where.cond))
-			}
-			args = append(args, where.args...)
-		}
-	}
-
-	// 默认添加软删除条件（只有调用WithTrashed时才不包含）
-	if !qb.withTrashed {
-		if len(qb.where) > 0 {
-			sql.WriteString(" AND delete_time = 0")
-		} else {
-			sql.WriteString(" WHERE delete_time = 0")
-		}
-	}
+	hasWhere := qb.buildWhereSQL(&sql, &args)
+	qb.writeSoftDeleteWhere(ctx, &sql, hasWhere)
 
 	query := sql.String()
 
@@ -2044,7 +2031,7 @@ func (qb *Model) Inc(ctx context.Context, field string, value interface{}) *Quer
 		}
 	}
 
-	result, err := qb.db.Exec(ctx, query, args...)
+	result, err := qb.execCtx(ctx, query, args...)
 	return &QueryResult{
 		data:  result,
 		err:   err,
@@ -2067,34 +2054,8 @@ func (qb *Model) Dec(ctx context.Context, field string, value interface{}) *Quer
 	sql.WriteString(" - ?")
 	args = append(args, value)
 
-	// 添加WHERE条件
-	if len(qb.where) > 0 {
-		sql.WriteString(" WHERE ")
-		for i, where := range qb.where {
-			if i > 0 || where.operator != "" {
-				sql.WriteString(" ")
-				sql.WriteString(where.operator)
-				sql.WriteString(" ")
-			}
-			if where.field != "" {
-				sql.WriteString(quoteField(where.field))
-				sql.WriteString(" ")
-				sql.WriteString(where.cond)
-			} else {
-				sql.WriteString(quoteWhereCond(where.cond))
-			}
-			args = append(args, where.args...)
-		}
-	}
-
-	// 默认添加软删除条件（只有调用WithTrashed时才不包含）
-	if !qb.withTrashed {
-		if len(qb.where) > 0 {
-			sql.WriteString(" AND delete_time = 0")
-		} else {
-			sql.WriteString(" WHERE delete_time = 0")
-		}
-	}
+	hasWhere := qb.buildWhereSQL(&sql, &args)
+	qb.writeSoftDeleteWhere(ctx, &sql, hasWhere)
 
 	query := sql.String()
 
@@ -2110,7 +2071,7 @@ func (qb *Model) Dec(ctx context.Context, field string, value interface{}) *Quer
 		}
 	}
 
-	result, err := qb.db.Exec(ctx, query, args...)
+	result, err := qb.execCtx(ctx, query, args...)
 	return &QueryResult{
 		data:  result,
 		err:   err,
@@ -2119,32 +2080,67 @@ func (qb *Model) Dec(ctx context.Context, field string, value interface{}) *Quer
 	}
 }
 
-// WithTrashed 包含软删除数据
+// -------- 软删除 --------
+
+// WithTrashed 查询/更新时包含未删与已删记录（不过滤 delete_time）
 func (qb *Model) WithTrashed() *Model {
 	qb.withTrashed = true
+	qb.onlyTrashed = false
 	return qb
 }
 
-// Delete 删除数据（支持软删除）
-// Delete 删除数据（自动判断是否有delete_time字段，有则软删除，没有则真实删除）
+// OnlyTrashed 只操作已软删记录（delete_time > 0）
+func (qb *Model) OnlyTrashed() *Model {
+	qb.onlyTrashed = true
+	qb.withTrashed = false
+	return qb
+}
+
+// Restore 恢复软删记录（delete_time 置 0，须带 Where 条件）
+func (qb *Model) Restore(ctx context.Context) *QueryResult {
+	if qb.buildErr != nil {
+		return &QueryResult{data: nil, err: qb.buildErr, query: "", args: nil}
+	}
+	if !qb.hasDeleteTimeField(ctx) {
+		return &QueryResult{data: nil, err: fmt.Errorf("table %s has no delete_time field", qb.table), query: "", args: nil}
+	}
+	if len(qb.where) == 0 {
+		return &QueryResult{data: nil, err: fmt.Errorf("restore requires where conditions"), query: "", args: nil}
+	}
+	qb.onlyTrashed = true
+	qb.withTrashed = false
+	if qb.updateData == nil {
+		qb.updateData = make(map[string]interface{})
+	}
+	qb.updateData["delete_time"] = int64(0)
+	return qb.Update(ctx)
+}
+
+// ForceDelete 物理删除（无视 delete_time 软删标记）
+func (qb *Model) ForceDelete(ctx context.Context) *QueryResult {
+	if qb.buildErr != nil {
+		return &QueryResult{data: nil, err: qb.buildErr, query: "", args: nil}
+	}
+	return qb.forceDelete(ctx)
+}
+
+// Delete 删除数据（有 delete_time 字段则软删写时间戳，否则物理删除）
 func (qb *Model) Delete(ctx context.Context) *QueryResult {
 	if qb.buildErr != nil {
 		return &QueryResult{data: nil, err: qb.buildErr, query: "", args: nil}
 	}
-	// 首先检查表是否有delete_time字段
-	// 使用缓存的字段检测结果
 	if qb.hasDeleteTimeField(ctx) {
-		// 有delete_time字段，使用软删除
 		if qb.updateData == nil {
 			qb.updateData = make(map[string]interface{})
 		}
-		qb.updateData["delete_time"] = "UNIX_TIMESTAMP(NOW(3)) * 1000"
-
-		// 使用Update方法进行软删除
+		qb.updateData["delete_time"] = softDeleteTimeExpr
 		return qb.Update(ctx)
 	}
+	return qb.forceDelete(ctx)
+}
 
-	// 否则进行真实删除
+// forceDelete 执行物理 DELETE（不检查 delete_time，供 Delete/ForceDelete 调用）
+func (qb *Model) forceDelete(ctx context.Context) *QueryResult {
 	var sql strings.Builder
 	var args []interface{}
 
@@ -2173,25 +2169,7 @@ func (qb *Model) Delete(ctx context.Context) *QueryResult {
 		sql.WriteString(join.on)
 		args = append(args, join.args...)
 	}
-	// 添加WHERE条件
-	if len(qb.where) > 0 {
-		sql.WriteString(" WHERE ")
-		for i, where := range qb.where {
-			if i > 0 || where.operator != "" {
-				sql.WriteString(" ")
-				sql.WriteString(where.operator)
-				sql.WriteString(" ")
-			}
-			if where.field != "" {
-				sql.WriteString(quoteField(where.field))
-				sql.WriteString(" ")
-				sql.WriteString(where.cond)
-			} else {
-				sql.WriteString(quoteWhereCond(where.cond))
-			}
-			args = append(args, where.args...)
-		}
-	}
+	qb.buildWhereSQL(&sql, &args)
 
 	query := sql.String()
 
@@ -2207,7 +2185,7 @@ func (qb *Model) Delete(ctx context.Context) *QueryResult {
 		}
 	}
 
-	result, err := qb.db.Exec(ctx, query, args...)
+	result, err := qb.execCtx(ctx, query, args...)
 	return &QueryResult{
 		data:  result,
 		err:   err,
@@ -2216,8 +2194,7 @@ func (qb *Model) Delete(ctx context.Context) *QueryResult {
 	}
 }
 
-// buildQuery 构建SQL查询（修改以支持软删除）
-// buildQuery 构建SQL查询（修改：默认不添加软删除过滤，只有WithTrashed时才查询软删除数据）
+// buildQuery 构建 SELECT 查询（默认排除软删：delete_time = 0）
 func (qb *Model) buildQuery(ctx context.Context) (string, []interface{}) {
 	if qb.buildErr != nil {
 		return "", nil
@@ -2273,16 +2250,7 @@ func (qb *Model) buildQuery(ctx context.Context) (string, []interface{}) {
 		args = append(args, where.args...)
 	}
 
-	// 只有未调用WithTrashed且表有delete_time字段时才添加软删除条件
-	if !qb.withTrashed && qb.hasDeleteTimeField(ctx) {
-		if len(conditions) > 0 {
-			deleteCondition := " AND delete_time = 0"
-			conditions = append(conditions, deleteCondition)
-		} else {
-			deleteCondition := "delete_time = 0"
-			conditions = append(conditions, deleteCondition)
-		}
-	}
+	conditions = qb.appendSoftDeleteConditions(ctx, conditions)
 
 	// 如果有条件，添加WHERE子句
 	if len(conditions) > 0 {
@@ -2479,27 +2447,141 @@ func buildCompleteSQL(query string, args []interface{}) string {
 	return result
 }
 
-// hasDeleteTimeField 检测表是否有delete_time字段（带缓存）
+// softDeleteTimeExpr 软删除时写入的毫秒时间戳表达式
+const softDeleteTimeExpr = "UNIX_TIMESTAMP(NOW(3)) * 1000"
+
+// softDeleteScope 返回 delete_time 过滤片段；第二返回值表示表是否有 delete_time 字段
+func (qb *Model) softDeleteScope(ctx context.Context) (cond string, hasField bool) {
+	if !qb.hasDeleteTimeField(ctx) {
+		return "", false
+	}
+	if qb.onlyTrashed {
+		return "delete_time > 0", true
+	}
+	if qb.withTrashed {
+		return "", true
+	}
+	return "delete_time = 0", true
+}
+
+// appendSoftDeleteConditions 将 delete_time 条件并入字符串条件切片（用于 COUNT 等子查询）
+func (qb *Model) appendSoftDeleteConditions(ctx context.Context, conditions []string) []string {
+	scope, hasField := qb.softDeleteScope(ctx)
+	if !hasField || scope == "" {
+		return conditions
+	}
+	if len(conditions) > 0 {
+		return append(conditions, " AND "+scope)
+	}
+	return append(conditions, scope)
+}
+
+// writeSoftDeleteWhere 在已有或新建 WHERE 后追加 delete_time 过滤
+func (qb *Model) writeSoftDeleteWhere(ctx context.Context, sql *strings.Builder, hasWhere bool) {
+	scope, hasField := qb.softDeleteScope(ctx)
+	if !hasField || scope == "" {
+		return
+	}
+	if hasWhere {
+		sql.WriteString(" AND ")
+	} else {
+		sql.WriteString(" WHERE ")
+	}
+	sql.WriteString(scope)
+}
+
+// buildWhereSQL 拼接 WHERE 子句，返回是否已有 WHERE
+func (qb *Model) buildWhereSQL(sql *strings.Builder, args *[]interface{}) bool {
+	if len(qb.where) == 0 {
+		return false
+	}
+	sql.WriteString(" WHERE ")
+	for i, where := range qb.where {
+		if i > 0 || where.operator != "" {
+			sql.WriteString(" ")
+			sql.WriteString(where.operator)
+			sql.WriteString(" ")
+		}
+		if where.field != "" {
+			sql.WriteString(quoteField(where.field))
+			sql.WriteString(" ")
+			sql.WriteString(where.cond)
+		} else {
+			sql.WriteString(quoteWhereCond(where.cond))
+		}
+		*args = append(*args, where.args...)
+	}
+	return true
+}
+
+// sortedMapKeys 按字段名字典序返回 map 键，保证 INSERT/UPDATE 列顺序稳定
+func sortedMapKeys(m map[string]interface{}) []string {
+	keys := make([]string, 0, len(m))
+	for k := range m {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	return keys
+}
+
+// Clone 深拷贝当前构建器，用于在同一组条件上派生 Count/Select/Update 等，避免链式污染。
+func (qb *Model) Clone() *Model {
+	if qb == nil {
+		return nil
+	}
+	clone := *qb
+	clone.where = cloneWhereClauses(qb.where)
+	clone.joins = append([]joinClause(nil), qb.joins...)
+	clone.groupBy = append([]string(nil), qb.groupBy...)
+	clone.having = cloneWhereClauses(qb.having)
+	clone.orderBy = append([]orderClause(nil), qb.orderBy...)
+	clone.fields = append([]string(nil), qb.fields...)
+	clone.updateData = cloneStringAnyMap(qb.updateData)
+	clone.incData = cloneStringAnyMap(qb.incData)
+	clone.decData = cloneStringAnyMap(qb.decData)
+	if qb.hasDeleteTime != nil {
+		v := *qb.hasDeleteTime
+		clone.hasDeleteTime = &v
+	}
+	return &clone
+}
+
+func cloneWhereClauses(src []whereClause) []whereClause {
+	if len(src) == 0 {
+		return nil
+	}
+	out := make([]whereClause, len(src))
+	for i, w := range src {
+		out[i] = whereClause{
+			operator: w.operator,
+			field:    w.field,
+			cond:     w.cond,
+			args:     append([]interface{}(nil), w.args...),
+		}
+	}
+	return out
+}
+
+func cloneStringAnyMap(src map[string]interface{}) map[string]interface{} {
+	if len(src) == 0 {
+		return nil
+	}
+	out := make(map[string]interface{}, len(src))
+	for k, v := range src {
+		out[k] = v
+	}
+	return out
+}
+
+// hasDeleteTimeField 检测表是否有 delete_time 字段（优先测试覆盖值，否则查 DBManager 表元数据缓存）
 func (qb *Model) hasDeleteTimeField(ctx context.Context) bool {
-	// 如果已经检测过，直接返回缓存结果
 	if qb.hasDeleteTime != nil {
 		return *qb.hasDeleteTime
 	}
-
-	// 检测表是否有delete_time字段
-	checkSQL := `SELECT COUNT(*) FROM information_schema.COLUMNS 
-				 WHERE TABLE_SCHEMA = DATABASE() 
-				 AND TABLE_NAME = ? 
-				 AND COLUMN_NAME = 'delete_time'`
-
-	var count int
-	err := qb.db.QueryRow(ctx, &count, checkSQL, qb.table)
-
-	// 设置缓存结果
-	hasField := err == nil && count > 0
-	qb.hasDeleteTime = &hasField
-
-	return hasField
+	if qb.db == nil {
+		return false
+	}
+	return qb.db.tableHasDeleteTime(ctx, qb.table)
 }
 
 // convertToInterfaceSlice 将任意类型的切片转换为[]interface{}
@@ -2585,8 +2667,7 @@ func reflectConvertToInterfaceSlice(values interface{}) []interface{} {
 	return tempResult
 }
 
-// getConditionArgs 处理条件值，转换为[]interface{}
-// getConditionArgs 处理条件值，转换为[]interface{}
+// getConditionArgs 处理条件值，转换为 []interface{}
 func getConditionArgs(value interface{}) []interface{} {
 	if value == nil {
 		return []interface{}{}
@@ -2594,30 +2675,21 @@ func getConditionArgs(value interface{}) []interface{} {
 
 	return convertToInterfaceSlice(value)
 }
+// SetPrimaryKey 手动指定主键列名（默认从 information_schema 缓存读取，通常为 id）
 func (qb *Model) SetPrimaryKey(key string) *Model {
 	qb.primaryKey = key
 	return qb
 }
 
+// getPrimaryKey 返回主键列名：SetPrimaryKey > 表元数据 > 默认 "id"
 func (qb *Model) getPrimaryKey(ctx context.Context) string {
 	if qb.primaryKey != "" {
 		return qb.primaryKey
 	}
-
-	checkSQL := `SELECT COLUMN_NAME FROM information_schema.KEY_COLUMN_USAGE 
-				 WHERE TABLE_SCHEMA = DATABASE() 
-				 AND TABLE_NAME = ? 
-				 AND CONSTRAINT_NAME = 'PRIMARY' 
-				 LIMIT 1`
-
-	var pk string
-	err := qb.db.QueryRow(ctx, &pk, checkSQL, qb.table)
-	if err != nil || pk == "" {
-		qb.primaryKey = "id"
-	} else {
-		qb.primaryKey = pk
+	if qb.db == nil {
+		return "id"
 	}
-	return qb.primaryKey
+	return qb.db.tablePrimaryKey(ctx, qb.table)
 }
 
 func (qb *Model) shouldUpdateByPk(pkValue interface{}) bool {

@@ -85,6 +85,18 @@ func (c *Cache) Stop() {
 // dest: 目标结构体指针
 // loader: 数据加载函数
 func (c *Cache) Get(ctx context.Context, key string, dest any, loader Loader) error {
+	return c.getWithTTL(ctx, key, dest, c.opts.TTL, loader)
+}
+
+// GetWithTTL 与 Get 相同，但使用自定义 TTL 回填 Redis
+func (c *Cache) GetWithTTL(ctx context.Context, key string, dest any, ttl time.Duration, loader Loader) error {
+	if ttl <= 0 {
+		ttl = c.opts.TTL
+	}
+	return c.getWithTTL(ctx, key, dest, ttl, loader)
+}
+
+func (c *Cache) getWithTTL(ctx context.Context, key string, dest any, ttl time.Duration, loader Loader) error {
 	// 1. 本地缓存（可选）— collection.Cache 已内部实现过期检查 + 线程安全
 	if c.opts.EnableLocalCache && c.localCache != nil {
 		if v, ok := c.localCache.Get(key); ok {
@@ -139,11 +151,11 @@ func (c *Cache) Get(ctx context.Context, key string, dest any, loader Loader) er
 
 		// 4. 分布式锁保护 (防止跨进程击穿)
 		if c.opts.EnableRebuildLock {
-			return c.loadWithLock(ctx, key, loader)
+			return c.loadWithLock(ctx, key, ttl, loader)
 		}
 
 		// 无锁加载
-		return c.loadAndSet(ctx, key, loader)
+		return c.loadAndSetTTL(ctx, key, ttl, loader)
 	})
 
 	if err != nil {
@@ -166,7 +178,7 @@ func (c *Cache) Get(ctx context.Context, key string, dest any, loader Loader) er
 }
 
 // loadWithLock 带分布式锁的数据加载
-func (c *Cache) loadWithLock(ctx context.Context, key string, loader Loader) (interface{}, error) {
+func (c *Cache) loadWithLock(ctx context.Context, key string, ttl time.Duration, loader Loader) (interface{}, error) {
 	// 锁 Key 使用 Hash Tag，确保在 Redis Cluster 下 Key 和 Lock 在同一分片
 	lockKey := fmt.Sprintf("lock:rebuild:{%s}", key)
 	uuid := c.newUUID()
@@ -176,13 +188,13 @@ func (c *Cache) loadWithLock(ctx context.Context, key string, loader Loader) (in
 	if err != nil {
 		logx.Errorf("acquire rebuild lock error, key=%s, err=%v", lockKey, err)
 		// 锁异常降级：直接加载
-		return c.loadAndSet(ctx, key, loader)
+		return c.loadAndSetTTL(ctx, key, ttl, loader)
 	}
 
 	// 没拿到锁 -> 降级策略
 	if !acquired {
 		logx.Infof("lock contention, fallback to load directly, key=%s", key)
-		return c.waitAndRetry(ctx, key, loader)
+		return c.waitAndRetry(ctx, key, ttl, loader)
 	}
 
 	// 拿到锁 -> defer 解锁
@@ -195,11 +207,16 @@ func (c *Cache) loadWithLock(ctx context.Context, key string, loader Loader) (in
 	}
 
 	// 真正加载数据
-	return c.loadAndSet(ctx, key, loader)
+	return c.loadAndSetTTL(ctx, key, ttl, loader)
 }
 
-// loadAndSet 纯粹的数据加载与回填逻辑
+// loadAndSet 纯粹的数据加载与回填逻辑（使用默认 TTL）
 func (c *Cache) loadAndSet(ctx context.Context, key string, loader Loader) (interface{}, error) {
+	return c.loadAndSetTTL(ctx, key, c.opts.TTL, loader)
+}
+
+// loadAndSetTTL 数据加载与回填，可指定 TTL
+func (c *Cache) loadAndSetTTL(ctx context.Context, key string, ttl time.Duration, loader Loader) (interface{}, error) {
 	data, err := loader(ctx)
 	if err != nil {
 		logx.Errorf("loader db query fail key=%s err=%v", key, err)
@@ -219,8 +236,8 @@ func (c *Cache) loadAndSet(ctx context.Context, key string, loader Loader) (inte
 		}
 
 		// 写 Redis (带 jitter 防雪崩)
-		ttl := jitter(c.opts.TTL)
-		if err := c.rds.SetexCtx(ctx, key, string(bytes), int(ttl.Seconds())); err != nil {
+		cacheTTL := jitter(ttl)
+		if err := c.rds.SetexCtx(ctx, key, string(bytes), int(cacheTTL.Seconds())); err != nil {
 			logx.Errorf("cache setex error, key=%s, err=%v", key, err)
 		}
 		resultStr = string(bytes)
@@ -231,7 +248,7 @@ func (c *Cache) loadAndSet(ctx context.Context, key string, loader Loader) (inte
 }
 
 // waitAndRetry 自旋等待其他节点重建缓存
-func (c *Cache) waitAndRetry(ctx context.Context, key string, loader Loader) (interface{}, error) {
+func (c *Cache) waitAndRetry(ctx context.Context, key string, ttl time.Duration, loader Loader) (interface{}, error) {
 	retryInterval := c.opts.RebuildLockRetryInterval
 	maxRetries := c.opts.RebuildLockMaxRetries
 	if retryInterval <= 0 {
@@ -260,7 +277,7 @@ func (c *Cache) waitAndRetry(ctx context.Context, key string, loader Loader) (in
 
 	// 等待超时，降级策略：直接查询数据库
 	logx.Infof("rebuild lock wait timeout, fallback to load directly, key=%s", key)
-	return c.loadAndSet(ctx, key, loader)
+	return c.loadAndSetTTL(ctx, key, ttl, loader)
 }
 
 // releaseLock 释放重建锁（Lua）

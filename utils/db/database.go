@@ -5,20 +5,23 @@ import (
 	"database/sql"
 	"fmt"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/zeromicro/go-zero/core/logx"
 	"github.com/zeromicro/go-zero/core/stores/sqlx"
 )
 
-// DBManager 数据库管理器
+// DBManager 数据库管理器，维护连接池、表前缀与表元数据缓存（delete_time / 主键）
 type DBManager struct {
 	conn        sqlx.SqlConn
 	tablePrefix string
 	poolConfig  DBPoolConfig
+	tableMetaMu sync.RWMutex
+	tableMeta   map[string]tableMeta // 按表名缓存，进程内只查一次 information_schema
 }
 
-// Session 事务会话
+// Session 事务会话。在 Trans 回调内通过 s.Model 创建 Model，读写共享同一 sqlx.Session。
 type Session struct {
 	session     sqlx.Session
 	db          *DBManager
@@ -31,6 +34,7 @@ func NewDBManager(datasource string) *DBManager {
 		conn:        sqlx.NewSqlConn("mysql", datasource),
 		tablePrefix: "",
 		poolConfig:  GetDefaultPoolConfig(),
+		tableMeta:   make(map[string]tableMeta),
 	}
 }
 
@@ -121,7 +125,7 @@ func (db *DBManager) Table(table string) *Model {
 	return db.Model(table)
 }
 
-// Trans 执行事务
+// Trans 在事务中执行 fn；fn 内须使用 sess.Model，勿混用 db.Model 以免脱离事务。
 func (db *DBManager) Trans(ctx context.Context, fn func(context.Context, *Session) error) error {
 	return db.conn.TransactCtx(ctx, func(ctx context.Context, session sqlx.Session) error {
 		sess := &Session{
