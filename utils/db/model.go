@@ -949,6 +949,67 @@ func (qb *Model) All(ctx context.Context, dest interface{}) *QueryResult {
 	return qb.Select(ctx, dest)
 }
 
+// SelectMaps 查询多条记录为 []map[string]interface{}。
+// go-zero sqlx 的 QueryRowsPartialCtx 不支持 slice/map，需走原生 Rows 扫描。
+func (qb *Model) SelectMaps(ctx context.Context) *QueryResult {
+	if qb.buildErr != nil {
+		return &QueryResult{err: qb.buildErr}
+	}
+	query, args := qb.buildQuery(ctx)
+	if qb.sqlFetch {
+		completeSQL := buildCompleteSQL(query, args)
+		fmt.Printf("完整SQL: %s\n原始SQL: %s\n参数: %v\n", completeSQL, query, args)
+		return &QueryResult{data: []map[string]interface{}{}, err: nil, query: query, args: args}
+	}
+	rows, err := qb.queryRawCtx(ctx, query, args...)
+	if err != nil {
+		return &QueryResult{err: err, query: query, args: args}
+	}
+	defer rows.Close()
+	list, scanErr := scanRowsToMaps(rows)
+	return &QueryResult{data: list, err: scanErr, query: query, args: args}
+}
+
+func (qb *Model) queryRawCtx(ctx context.Context, query string, args ...interface{}) (*sql.Rows, error) {
+	if qb.session != nil {
+		rawDB, err := qb.db.conn.RawDB()
+		if err != nil {
+			return nil, err
+		}
+		return rawDB.QueryContext(ctx, query, args...)
+	}
+	return qb.db.QueryRaw(ctx, query, args...)
+}
+
+func scanRowsToMaps(rows *sql.Rows) ([]map[string]interface{}, error) {
+	columns, err := rows.Columns()
+	if err != nil {
+		return nil, err
+	}
+	list := make([]map[string]interface{}, 0)
+	for rows.Next() {
+		values := make([]interface{}, len(columns))
+		ptrs := make([]interface{}, len(columns))
+		for i := range values {
+			ptrs[i] = &values[i]
+		}
+		if err := rows.Scan(ptrs...); err != nil {
+			return nil, err
+		}
+		row := make(map[string]interface{}, len(columns))
+		for i, col := range columns {
+			val := values[i]
+			if b, ok := val.([]byte); ok {
+				row[col] = string(b)
+			} else {
+				row[col] = val
+			}
+		}
+		list = append(list, row)
+	}
+	return list, rows.Err()
+}
+
 // Paginate 分页查询方法
 // page: 第几页（从1开始）
 // pageSize: 每页显示多少行

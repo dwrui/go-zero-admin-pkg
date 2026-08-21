@@ -7,12 +7,11 @@
 package configcenter
 
 import (
+	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
+	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
-
-	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
-	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 )
 
 const (
@@ -198,6 +197,442 @@ func (x *GetConfigInfoResponse) GetConfigValue() string {
 	return ""
 }
 
+type GetConfigValueRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	CategoryKey   string                 `protobuf:"bytes,1,opt,name=category_key,json=categoryKey,proto3" json:"category_key,omitempty"`
+	BusinessId    int64                  `protobuf:"varint,2,opt,name=business_id,json=businessId,proto3" json:"business_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetConfigValueRequest) Reset() {
+	*x = GetConfigValueRequest{}
+	mi := &file_configcenter_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetConfigValueRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetConfigValueRequest) ProtoMessage() {}
+
+func (x *GetConfigValueRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_configcenter_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetConfigValueRequest.ProtoReflect.Descriptor instead.
+func (*GetConfigValueRequest) Descriptor() ([]byte, []int) {
+	return file_configcenter_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *GetConfigValueRequest) GetCategoryKey() string {
+	if x != nil {
+		return x.CategoryKey
+	}
+	return ""
+}
+
+func (x *GetConfigValueRequest) GetBusinessId() int64 {
+	if x != nil {
+		return x.BusinessId
+	}
+	return 0
+}
+
+type ConfigValueItem struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	ConfigKey     string                 `protobuf:"bytes,1,opt,name=config_key,json=configKey,proto3" json:"config_key,omitempty"`
+	ConfigValue   string                 `protobuf:"bytes,2,opt,name=config_value,json=configValue,proto3" json:"config_value,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ConfigValueItem) Reset() {
+	*x = ConfigValueItem{}
+	mi := &file_configcenter_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ConfigValueItem) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ConfigValueItem) ProtoMessage() {}
+
+func (x *ConfigValueItem) ProtoReflect() protoreflect.Message {
+	mi := &file_configcenter_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ConfigValueItem.ProtoReflect.Descriptor instead.
+func (*ConfigValueItem) Descriptor() ([]byte, []int) {
+	return file_configcenter_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *ConfigValueItem) GetConfigKey() string {
+	if x != nil {
+		return x.ConfigKey
+	}
+	return ""
+}
+
+func (x *ConfigValueItem) GetConfigValue() string {
+	if x != nil {
+		return x.ConfigValue
+	}
+	return ""
+}
+
+type GetConfigValueResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Items         []*ConfigValueItem     `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetConfigValueResponse) Reset() {
+	*x = GetConfigValueResponse{}
+	mi := &file_configcenter_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetConfigValueResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetConfigValueResponse) ProtoMessage() {}
+
+func (x *GetConfigValueResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_configcenter_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetConfigValueResponse.ProtoReflect.Descriptor instead.
+func (*GetConfigValueResponse) Descriptor() ([]byte, []int) {
+	return file_configcenter_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *GetConfigValueResponse) GetItems() []*ConfigValueItem {
+	if x != nil {
+		return x.Items
+	}
+	return nil
+}
+
+type DelFileRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Ids           []uint64               `protobuf:"varint,1,rep,packed,name=ids,proto3" json:"ids,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DelFileRequest) Reset() {
+	*x = DelFileRequest{}
+	mi := &file_configcenter_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DelFileRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DelFileRequest) ProtoMessage() {}
+
+func (x *DelFileRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_configcenter_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DelFileRequest.ProtoReflect.Descriptor instead.
+func (*DelFileRequest) Descriptor() ([]byte, []int) {
+	return file_configcenter_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *DelFileRequest) GetIds() []uint64 {
+	if x != nil {
+		return x.Ids
+	}
+	return nil
+}
+
+type DelFileResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DelFileResponse) Reset() {
+	*x = DelFileResponse{}
+	mi := &file_configcenter_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DelFileResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DelFileResponse) ProtoMessage() {}
+
+func (x *DelFileResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_configcenter_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DelFileResponse.ProtoReflect.Descriptor instead.
+func (*DelFileResponse) Descriptor() ([]byte, []int) {
+	return file_configcenter_proto_rawDescGZIP(), []int{8}
+}
+
+type UploadFileRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Content       []byte                 `protobuf:"bytes,1,opt,name=content,proto3" json:"content,omitempty"`
+	Filename      string                 `protobuf:"bytes,2,opt,name=filename,proto3" json:"filename,omitempty"`
+	ContentType   string                 `protobuf:"bytes,3,opt,name=content_type,json=contentType,proto3" json:"content_type,omitempty"`
+	Size          int64                  `protobuf:"varint,4,opt,name=size,proto3" json:"size,omitempty"`
+	BusinessId    uint64                 `protobuf:"varint,5,opt,name=business_id,json=businessId,proto3" json:"business_id,omitempty"`
+	Pid           uint64                 `protobuf:"varint,6,opt,name=pid,proto3" json:"pid,omitempty"`
+	StorageName   string                 `protobuf:"bytes,7,opt,name=storage_name,json=storageName,proto3" json:"storage_name,omitempty"`
+	IsCommon      bool                   `protobuf:"varint,8,opt,name=is_common,json=isCommon,proto3" json:"is_common,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UploadFileRequest) Reset() {
+	*x = UploadFileRequest{}
+	mi := &file_configcenter_proto_msgTypes[9]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UploadFileRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UploadFileRequest) ProtoMessage() {}
+
+func (x *UploadFileRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_configcenter_proto_msgTypes[9]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UploadFileRequest.ProtoReflect.Descriptor instead.
+func (*UploadFileRequest) Descriptor() ([]byte, []int) {
+	return file_configcenter_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *UploadFileRequest) GetContent() []byte {
+	if x != nil {
+		return x.Content
+	}
+	return nil
+}
+
+func (x *UploadFileRequest) GetFilename() string {
+	if x != nil {
+		return x.Filename
+	}
+	return ""
+}
+
+func (x *UploadFileRequest) GetContentType() string {
+	if x != nil {
+		return x.ContentType
+	}
+	return ""
+}
+
+func (x *UploadFileRequest) GetSize() int64 {
+	if x != nil {
+		return x.Size
+	}
+	return 0
+}
+
+func (x *UploadFileRequest) GetBusinessId() uint64 {
+	if x != nil {
+		return x.BusinessId
+	}
+	return 0
+}
+
+func (x *UploadFileRequest) GetPid() uint64 {
+	if x != nil {
+		return x.Pid
+	}
+	return 0
+}
+
+func (x *UploadFileRequest) GetStorageName() string {
+	if x != nil {
+		return x.StorageName
+	}
+	return ""
+}
+
+func (x *UploadFileRequest) GetIsCommon() bool {
+	if x != nil {
+		return x.IsCommon
+	}
+	return false
+}
+
+type UploadFileResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            uint64                 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	Title         string                 `protobuf:"bytes,3,opt,name=title,proto3" json:"title,omitempty"`
+	Pid           uint64                 `protobuf:"varint,4,opt,name=pid,proto3" json:"pid,omitempty"`
+	Url           string                 `protobuf:"bytes,5,opt,name=url,proto3" json:"url,omitempty"`
+	Filesize      uint64                 `protobuf:"varint,6,opt,name=filesize,proto3" json:"filesize,omitempty"`
+	Type          uint64                 `protobuf:"varint,7,opt,name=type,proto3" json:"type,omitempty"`
+	Mimetype      string                 `protobuf:"bytes,8,opt,name=mimetype,proto3" json:"mimetype,omitempty"`
+	CoverUrl      string                 `protobuf:"bytes,9,opt,name=cover_url,json=coverUrl,proto3" json:"cover_url,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UploadFileResponse) Reset() {
+	*x = UploadFileResponse{}
+	mi := &file_configcenter_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UploadFileResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UploadFileResponse) ProtoMessage() {}
+
+func (x *UploadFileResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_configcenter_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UploadFileResponse.ProtoReflect.Descriptor instead.
+func (*UploadFileResponse) Descriptor() ([]byte, []int) {
+	return file_configcenter_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *UploadFileResponse) GetId() uint64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+func (x *UploadFileResponse) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *UploadFileResponse) GetTitle() string {
+	if x != nil {
+		return x.Title
+	}
+	return ""
+}
+
+func (x *UploadFileResponse) GetPid() uint64 {
+	if x != nil {
+		return x.Pid
+	}
+	return 0
+}
+
+func (x *UploadFileResponse) GetUrl() string {
+	if x != nil {
+		return x.Url
+	}
+	return ""
+}
+
+func (x *UploadFileResponse) GetFilesize() uint64 {
+	if x != nil {
+		return x.Filesize
+	}
+	return 0
+}
+
+func (x *UploadFileResponse) GetType() uint64 {
+	if x != nil {
+		return x.Type
+	}
+	return 0
+}
+
+func (x *UploadFileResponse) GetMimetype() string {
+	if x != nil {
+		return x.Mimetype
+	}
+	return ""
+}
+
+func (x *UploadFileResponse) GetCoverUrl() string {
+	if x != nil {
+		return x.CoverUrl
+	}
+	return ""
+}
+
 var File_configcenter_proto protoreflect.FileDescriptor
 
 const file_configcenter_proto_rawDesc = "" +
@@ -214,10 +649,49 @@ const file_configcenter_proto_rawDesc = "" +
 	"\vconfig_type\x18\x01 \x01(\tR\n" +
 	"configType\":\n" +
 	"\x15GetConfigInfoResponse\x12!\n" +
-	"\fconfig_value\x18\x01 \x01(\tR\vconfigValue2\xba\x01\n" +
+	"\fconfig_value\x18\x01 \x01(\tR\vconfigValue\"[\n" +
+	"\x15GetConfigValueRequest\x12!\n" +
+	"\fcategory_key\x18\x01 \x01(\tR\vcategoryKey\x12\x1f\n" +
+	"\vbusiness_id\x18\x02 \x01(\x03R\n" +
+	"businessId\"S\n" +
+	"\x0fConfigValueItem\x12\x1d\n" +
+	"\n" +
+	"config_key\x18\x01 \x01(\tR\tconfigKey\x12!\n" +
+	"\fconfig_value\x18\x02 \x01(\tR\vconfigValue\"M\n" +
+	"\x16GetConfigValueResponse\x123\n" +
+	"\x05items\x18\x01 \x03(\v2\x1d.configcenter.ConfigValueItemR\x05items\"\"\n" +
+	"\x0eDelFileRequest\x12\x10\n" +
+	"\x03ids\x18\x01 \x03(\x04R\x03ids\"\x11\n" +
+	"\x0fDelFileResponse\"\xf3\x01\n" +
+	"\x11UploadFileRequest\x12\x18\n" +
+	"\acontent\x18\x01 \x01(\fR\acontent\x12\x1a\n" +
+	"\bfilename\x18\x02 \x01(\tR\bfilename\x12!\n" +
+	"\fcontent_type\x18\x03 \x01(\tR\vcontentType\x12\x12\n" +
+	"\x04size\x18\x04 \x01(\x03R\x04size\x12\x1f\n" +
+	"\vbusiness_id\x18\x05 \x01(\x04R\n" +
+	"businessId\x12\x10\n" +
+	"\x03pid\x18\x06 \x01(\x04R\x03pid\x12!\n" +
+	"\fstorage_name\x18\a \x01(\tR\vstorageName\x12\x1b\n" +
+	"\tis_common\x18\b \x01(\bR\bisCommon\"\xdb\x01\n" +
+	"\x12UploadFileResponse\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\x04R\x02id\x12\x12\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\x12\x14\n" +
+	"\x05title\x18\x03 \x01(\tR\x05title\x12\x10\n" +
+	"\x03pid\x18\x04 \x01(\x04R\x03pid\x12\x10\n" +
+	"\x03url\x18\x05 \x01(\tR\x03url\x12\x1a\n" +
+	"\bfilesize\x18\x06 \x01(\x04R\bfilesize\x12\x12\n" +
+	"\x04type\x18\a \x01(\x04R\x04type\x12\x1a\n" +
+	"\bmimetype\x18\b \x01(\tR\bmimetype\x12\x1b\n" +
+	"\tcover_url\x18\t \x01(\tR\bcoverUrl2\xba\x01\n" +
 	"\x10ConfigApiService\x12L\n" +
 	"\tGetConfig\x12\x1e.configcenter.GetConfigRequest\x1a\x1f.configcenter.GetConfigResponse\x12X\n" +
-	"\rGetConfigInfo\x12\".configcenter.GetConfigInfoRequest\x1a#.configcenter.GetConfigInfoResponseB\x10Z\x0e./configcenterb\x06proto3"
+	"\rGetConfigInfo\x12\".configcenter.GetConfigInfoRequest\x1a#.configcenter.GetConfigInfoResponse2j\n" +
+	"\x11ConfigItemService\x12U\n" +
+	"\bGetValue\x12#.configcenter.GetConfigValueRequest\x1a$.configcenter.GetConfigValueResponse2\xa7\x01\n" +
+	"\fFilesService\x12F\n" +
+	"\aDelFile\x12\x1c.configcenter.DelFileRequest\x1a\x1d.configcenter.DelFileResponse\x12O\n" +
+	"\n" +
+	"UploadFile\x12\x1f.configcenter.UploadFileRequest\x1a .configcenter.UploadFileResponseB\x10Z\x0e./configcenterb\x06proto3"
 
 var (
 	file_configcenter_proto_rawDescOnce sync.Once
@@ -231,25 +705,39 @@ func file_configcenter_proto_rawDescGZIP() []byte {
 	return file_configcenter_proto_rawDescData
 }
 
-var file_configcenter_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
+var file_configcenter_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
 var file_configcenter_proto_goTypes = []any{
-	(*GetConfigRequest)(nil),      // 0: configcenter.GetConfigRequest
-	(*GetConfigResponse)(nil),     // 1: configcenter.GetConfigResponse
-	(*GetConfigInfoRequest)(nil),  // 2: configcenter.GetConfigInfoRequest
-	(*GetConfigInfoResponse)(nil), // 3: configcenter.GetConfigInfoResponse
-	nil,                           // 4: configcenter.GetConfigResponse.ConfigsEntry
+	(*GetConfigRequest)(nil),       // 0: configcenter.GetConfigRequest
+	(*GetConfigResponse)(nil),      // 1: configcenter.GetConfigResponse
+	(*GetConfigInfoRequest)(nil),   // 2: configcenter.GetConfigInfoRequest
+	(*GetConfigInfoResponse)(nil),  // 3: configcenter.GetConfigInfoResponse
+	(*GetConfigValueRequest)(nil),  // 4: configcenter.GetConfigValueRequest
+	(*ConfigValueItem)(nil),        // 5: configcenter.ConfigValueItem
+	(*GetConfigValueResponse)(nil), // 6: configcenter.GetConfigValueResponse
+	(*DelFileRequest)(nil),         // 7: configcenter.DelFileRequest
+	(*DelFileResponse)(nil),        // 8: configcenter.DelFileResponse
+	(*UploadFileRequest)(nil),      // 9: configcenter.UploadFileRequest
+	(*UploadFileResponse)(nil),     // 10: configcenter.UploadFileResponse
+	nil,                            // 11: configcenter.GetConfigResponse.ConfigsEntry
 }
 var file_configcenter_proto_depIdxs = []int32{
-	4, // 0: configcenter.GetConfigResponse.configs:type_name -> configcenter.GetConfigResponse.ConfigsEntry
-	0, // 1: configcenter.ConfigApiService.GetConfig:input_type -> configcenter.GetConfigRequest
-	2, // 2: configcenter.ConfigApiService.GetConfigInfo:input_type -> configcenter.GetConfigInfoRequest
-	1, // 3: configcenter.ConfigApiService.GetConfig:output_type -> configcenter.GetConfigResponse
-	3, // 4: configcenter.ConfigApiService.GetConfigInfo:output_type -> configcenter.GetConfigInfoResponse
-	3, // [3:5] is the sub-list for method output_type
-	1, // [1:3] is the sub-list for method input_type
-	1, // [1:1] is the sub-list for extension type_name
-	1, // [1:1] is the sub-list for extension extendee
-	0, // [0:1] is the sub-list for field type_name
+	11, // 0: configcenter.GetConfigResponse.configs:type_name -> configcenter.GetConfigResponse.ConfigsEntry
+	5,  // 1: configcenter.GetConfigValueResponse.items:type_name -> configcenter.ConfigValueItem
+	0,  // 2: configcenter.ConfigApiService.GetConfig:input_type -> configcenter.GetConfigRequest
+	2,  // 3: configcenter.ConfigApiService.GetConfigInfo:input_type -> configcenter.GetConfigInfoRequest
+	4,  // 4: configcenter.ConfigItemService.GetValue:input_type -> configcenter.GetConfigValueRequest
+	7,  // 5: configcenter.FilesService.DelFile:input_type -> configcenter.DelFileRequest
+	9,  // 6: configcenter.FilesService.UploadFile:input_type -> configcenter.UploadFileRequest
+	1,  // 7: configcenter.ConfigApiService.GetConfig:output_type -> configcenter.GetConfigResponse
+	3,  // 8: configcenter.ConfigApiService.GetConfigInfo:output_type -> configcenter.GetConfigInfoResponse
+	6,  // 9: configcenter.ConfigItemService.GetValue:output_type -> configcenter.GetConfigValueResponse
+	8,  // 10: configcenter.FilesService.DelFile:output_type -> configcenter.DelFileResponse
+	10, // 11: configcenter.FilesService.UploadFile:output_type -> configcenter.UploadFileResponse
+	7,  // [7:12] is the sub-list for method output_type
+	2,  // [2:7] is the sub-list for method input_type
+	2,  // [2:2] is the sub-list for extension type_name
+	2,  // [2:2] is the sub-list for extension extendee
+	0,  // [0:2] is the sub-list for field type_name
 }
 
 func init() { file_configcenter_proto_init() }
@@ -263,9 +751,9 @@ func file_configcenter_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_configcenter_proto_rawDesc), len(file_configcenter_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   5,
+			NumMessages:   12,
 			NumExtensions: 0,
-			NumServices:   1,
+			NumServices:   3,
 		},
 		GoTypes:           file_configcenter_proto_goTypes,
 		DependencyIndexes: file_configcenter_proto_depIdxs,

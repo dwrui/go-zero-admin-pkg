@@ -20,7 +20,59 @@ message GetConfigInfoResponse {
   string config_value = 1;
 }
 
+message GetConfigValueRequest {
+  string category_key = 1;
+  int64 business_id = 2;
+}
+
+message ConfigValueItem {
+  string config_key = 1;
+  string config_value = 2;
+}
+
+message GetConfigValueResponse {
+  repeated ConfigValueItem items = 1;
+}
+
 service ConfigApiService {
   rpc GetConfig(GetConfigRequest) returns (GetConfigResponse);
   rpc GetConfigInfo(GetConfigInfoRequest) returns (GetConfigInfoResponse);
+}
+
+service ConfigItemService {
+  rpc GetValue(GetConfigValueRequest) returns (GetConfigValueResponse);
+}
+
+message DelFileRequest {
+  repeated uint64 ids = 1;
+}
+
+message DelFileResponse {}
+
+message UploadFileRequest {
+  bytes content = 1;
+  string filename = 2;
+  string content_type = 3;
+  int64 size = 4;
+  uint64 business_id = 5;
+  uint64 pid = 6;
+  string storage_name = 7;
+  bool is_common = 8;
+}
+
+message UploadFileResponse {
+  uint64 id = 1;
+  string name = 2;
+  string title = 3;
+  uint64 pid = 4;
+  string url = 5;
+  uint64 filesize = 6;
+  uint64 type = 7;
+  string mimetype = 8;
+  string cover_url = 9;
+}
+
+service FilesService {
+  rpc DelFile(DelFileRequest) returns (DelFileResponse);
+  rpc UploadFile(UploadFileRequest) returns (UploadFileResponse);
 }

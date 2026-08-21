@@ -61,6 +61,11 @@ func GetClient() *AuthClient {
 	return defaultClient
 }
 
+// TryGetClient 返回已初始化的客户端；未初始化时返回 nil。
+func TryGetClient() *AuthClient {
+	return defaultClient
+}
+
 func (c *AuthClient) CheckToken(ctx context.Context, token string, permission string) (string, error) {
 	resp, err := c.client.CheckToken(ctx, &auth2.CheckTokenRequest{
 		Token:      token,

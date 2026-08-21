@@ -8,7 +8,6 @@ package configcenter
 
 import (
 	context "context"
-
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -153,6 +152,248 @@ var ConfigApiService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetConfigInfo",
 			Handler:    _ConfigApiService_GetConfigInfo_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "configcenter.proto",
+}
+
+const (
+	ConfigItemService_GetValue_FullMethodName = "/configcenter.ConfigItemService/GetValue"
+)
+
+// ConfigItemServiceClient is the client API for ConfigItemService service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+type ConfigItemServiceClient interface {
+	GetValue(ctx context.Context, in *GetConfigValueRequest, opts ...grpc.CallOption) (*GetConfigValueResponse, error)
+}
+
+type configItemServiceClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewConfigItemServiceClient(cc grpc.ClientConnInterface) ConfigItemServiceClient {
+	return &configItemServiceClient{cc}
+}
+
+func (c *configItemServiceClient) GetValue(ctx context.Context, in *GetConfigValueRequest, opts ...grpc.CallOption) (*GetConfigValueResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetConfigValueResponse)
+	err := c.cc.Invoke(ctx, ConfigItemService_GetValue_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// ConfigItemServiceServer is the server API for ConfigItemService service.
+// All implementations must embed UnimplementedConfigItemServiceServer
+// for forward compatibility.
+type ConfigItemServiceServer interface {
+	GetValue(context.Context, *GetConfigValueRequest) (*GetConfigValueResponse, error)
+	mustEmbedUnimplementedConfigItemServiceServer()
+}
+
+// UnimplementedConfigItemServiceServer must be embedded to have
+// forward compatible implementations.
+//
+// NOTE: this should be embedded by value instead of pointer to avoid a nil
+// pointer dereference when methods are called.
+type UnimplementedConfigItemServiceServer struct{}
+
+func (UnimplementedConfigItemServiceServer) GetValue(context.Context, *GetConfigValueRequest) (*GetConfigValueResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetValue not implemented")
+}
+func (UnimplementedConfigItemServiceServer) mustEmbedUnimplementedConfigItemServiceServer() {}
+func (UnimplementedConfigItemServiceServer) testEmbeddedByValue()                           {}
+
+// UnsafeConfigItemServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to ConfigItemServiceServer will
+// result in compilation errors.
+type UnsafeConfigItemServiceServer interface {
+	mustEmbedUnimplementedConfigItemServiceServer()
+}
+
+func RegisterConfigItemServiceServer(s grpc.ServiceRegistrar, srv ConfigItemServiceServer) {
+	// If the following call panics, it indicates UnimplementedConfigItemServiceServer was
+	// embedded by pointer and is nil.  This will cause panics if an
+	// unimplemented method is ever invoked, so we test this at initialization
+	// time to prevent it from happening at runtime later due to I/O.
+	if t, ok := srv.(interface{ testEmbeddedByValue() }); ok {
+		t.testEmbeddedByValue()
+	}
+	s.RegisterService(&ConfigItemService_ServiceDesc, srv)
+}
+
+func _ConfigItemService_GetValue_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetConfigValueRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ConfigItemServiceServer).GetValue(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ConfigItemService_GetValue_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ConfigItemServiceServer).GetValue(ctx, req.(*GetConfigValueRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// ConfigItemService_ServiceDesc is the grpc.ServiceDesc for ConfigItemService service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var ConfigItemService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "configcenter.ConfigItemService",
+	HandlerType: (*ConfigItemServiceServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "GetValue",
+			Handler:    _ConfigItemService_GetValue_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "configcenter.proto",
+}
+
+const (
+	FilesService_DelFile_FullMethodName    = "/configcenter.FilesService/DelFile"
+	FilesService_UploadFile_FullMethodName = "/configcenter.FilesService/UploadFile"
+)
+
+// FilesServiceClient is the client API for FilesService service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+type FilesServiceClient interface {
+	DelFile(ctx context.Context, in *DelFileRequest, opts ...grpc.CallOption) (*DelFileResponse, error)
+	UploadFile(ctx context.Context, in *UploadFileRequest, opts ...grpc.CallOption) (*UploadFileResponse, error)
+}
+
+type filesServiceClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewFilesServiceClient(cc grpc.ClientConnInterface) FilesServiceClient {
+	return &filesServiceClient{cc}
+}
+
+func (c *filesServiceClient) DelFile(ctx context.Context, in *DelFileRequest, opts ...grpc.CallOption) (*DelFileResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DelFileResponse)
+	err := c.cc.Invoke(ctx, FilesService_DelFile_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *filesServiceClient) UploadFile(ctx context.Context, in *UploadFileRequest, opts ...grpc.CallOption) (*UploadFileResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UploadFileResponse)
+	err := c.cc.Invoke(ctx, FilesService_UploadFile_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// FilesServiceServer is the server API for FilesService service.
+// All implementations must embed UnimplementedFilesServiceServer
+// for forward compatibility.
+type FilesServiceServer interface {
+	DelFile(context.Context, *DelFileRequest) (*DelFileResponse, error)
+	UploadFile(context.Context, *UploadFileRequest) (*UploadFileResponse, error)
+	mustEmbedUnimplementedFilesServiceServer()
+}
+
+// UnimplementedFilesServiceServer must be embedded to have
+// forward compatible implementations.
+//
+// NOTE: this should be embedded by value instead of pointer to avoid a nil
+// pointer dereference when methods are called.
+type UnimplementedFilesServiceServer struct{}
+
+func (UnimplementedFilesServiceServer) DelFile(context.Context, *DelFileRequest) (*DelFileResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method DelFile not implemented")
+}
+func (UnimplementedFilesServiceServer) UploadFile(context.Context, *UploadFileRequest) (*UploadFileResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method UploadFile not implemented")
+}
+func (UnimplementedFilesServiceServer) mustEmbedUnimplementedFilesServiceServer() {}
+func (UnimplementedFilesServiceServer) testEmbeddedByValue()                      {}
+
+// UnsafeFilesServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to FilesServiceServer will
+// result in compilation errors.
+type UnsafeFilesServiceServer interface {
+	mustEmbedUnimplementedFilesServiceServer()
+}
+
+func RegisterFilesServiceServer(s grpc.ServiceRegistrar, srv FilesServiceServer) {
+	// If the following call panics, it indicates UnimplementedFilesServiceServer was
+	// embedded by pointer and is nil.  This will cause panics if an
+	// unimplemented method is ever invoked, so we test this at initialization
+	// time to prevent it from happening at runtime later due to I/O.
+	if t, ok := srv.(interface{ testEmbeddedByValue() }); ok {
+		t.testEmbeddedByValue()
+	}
+	s.RegisterService(&FilesService_ServiceDesc, srv)
+}
+
+func _FilesService_DelFile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DelFileRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FilesServiceServer).DelFile(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: FilesService_DelFile_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FilesServiceServer).DelFile(ctx, req.(*DelFileRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _FilesService_UploadFile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UploadFileRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FilesServiceServer).UploadFile(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: FilesService_UploadFile_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FilesServiceServer).UploadFile(ctx, req.(*UploadFileRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// FilesService_ServiceDesc is the grpc.ServiceDesc for FilesService service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var FilesService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "configcenter.FilesService",
+	HandlerType: (*FilesServiceServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "DelFile",
+			Handler:    _FilesService_DelFile_Handler,
+		},
+		{
+			MethodName: "UploadFile",
+			Handler:    _FilesService_UploadFile_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
