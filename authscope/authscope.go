@@ -41,20 +41,33 @@ func Model(scope, suffix string) string {
 	return TablePrefix(scope) + "_" + strings.TrimPrefix(suffix, "_")
 }
 
-// EnabledStatus 菜单/角色等「启用」状态值：B 端 1，总后台 0。
-func EnabledStatus(scope string) int64 {
-	if scope == Superadmin {
-		return 0
-	}
-	return 1
-}
-
 // IsAccountDisabled 账号是否禁用。
 func IsAccountDisabled(scope string, status int64) bool {
 	if scope == Superadmin {
 		return status == 1
 	}
 	return status != 1
+}
+
+// IsPlatformBanned B 端账号是否被总后台封禁（platform_status: 0=正常 1=封禁）。
+func IsPlatformBanned(platformStatus int64) bool {
+	return platformStatus == 1
+}
+
+// PlatformStatusFromAdminStatus 总后台操作业务账号：B 端 status(1=启用) → platform_status。
+func PlatformStatusFromAdminStatus(adminStatus uint64) uint64 {
+	if adminStatus == 1 {
+		return 0
+	}
+	return 1
+}
+
+// AdminStatusFromPlatformBan 列表展示：platform_status → B 端 status 语义(1=启用)。
+func AdminStatusFromPlatformBan(platformStatus int64) uint64 {
+	if IsPlatformBanned(platformStatus) {
+		return 0
+	}
+	return 1
 }
 
 // SkipBusinessFilter 平台视角是否跳过 business_id 过滤。
@@ -70,12 +83,12 @@ func LogType(scope string) string {
 	return "admin"
 }
 
-// LoginSelectFields 登录查询字段（总后台账号表无 business_id）。
+// LoginSelectFields 登录查询字段（总后台账号表无 business_id / platform_status）。
 func LoginSelectFields(scope string) string {
 	if scope == Superadmin {
 		return "id,account_id,password,salt,name,status,login_attempts,lock_time,dept_id"
 	}
-	return "id,account_id,business_id,password,salt,name,status,login_attempts,lock_time,dept_id"
+	return "id,account_id,business_id,password,salt,name,status,platform_status,login_attempts,lock_time,dept_id"
 }
 
 // TokenBusinessID JWT 中的 business_id（总后台固定 0）。
@@ -91,7 +104,32 @@ func UserInfoSelectFields(scope string) string {
 	if scope == Superadmin {
 		return "dept_id"
 	}
-	return "business_id,dept_id"
+	return "business_id,dept_id,status,platform_status"
+}
+
+// PermissionScope 权限校验用 scope：biz* 仍走总后台用户角色表。
+func PermissionScope(scope string) string {
+	if scope == Biz {
+		return Superadmin
+	}
+	return scope
+}
+
+// NormalizePermissionPath 将网关路径转为权限表中的 path（/api/platform → /admin）。
+func NormalizePermissionPath(path string) string {
+	if strings.HasPrefix(path, "/api/platform/") {
+		return "/admin/" + strings.TrimPrefix(path, "/api/platform/")
+	}
+	return path
+}
+
+// PermissionPathAliases 返回用于权限匹配的 path 候选（原路径 + 规范化路径）。
+func PermissionPathAliases(path string) []string {
+	normalized := NormalizePermissionPath(path)
+	if normalized == path {
+		return []string{path}
+	}
+	return []string{path, normalized}
 }
 
 // WithOutgoing 在 gRPC 客户端调用前注入 scope。
@@ -112,9 +150,6 @@ func RoleOwnerColumn(scope string) string {
 
 // AccountTimeColumns 账号表时间字段（superadmin 仍为 createtime/updatetime）。
 func AccountTimeColumns(scope string) (createCol, updateCol string) {
-	if scope == Superadmin {
-		return "createtime", "updatetime"
-	}
 	return "create_time", "update_time"
 }
 
@@ -133,7 +168,7 @@ func FromIncoming(ctx context.Context) string {
 
 // FromRequestPath 根据 HTTP 路径推断 scope（网关兜底）。
 func FromRequestPath(path string) string {
-	if strings.HasPrefix(path, "/admin/") || strings.HasPrefix(path, "/super-admin/") {
+	if strings.HasPrefix(path, "/api/platform/") || strings.HasPrefix(path, "/admin/") || strings.HasPrefix(path, "/super-admin/") {
 		return Superadmin
 	}
 	if strings.HasPrefix(path, "/api/admin") {

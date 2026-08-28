@@ -6,9 +6,9 @@ type JwtSettings struct {
 	AccessExpire int64
 }
 
-// JwtForScope 按 scope 选择 JWT 配置；总后台可独立密钥。
+// JwtForScope 按 scope 选择 JWT 配置；总后台与 biz* 接口共用 superadmin 密钥。
 func JwtForScope(scope string, admin, superadmin JwtSettings) JwtSettings {
-	if scope == Superadmin && superadmin.AccessSecret != "" {
+	if (scope == Superadmin || scope == Biz) && superadmin.AccessSecret != "" {
 		if superadmin.AccessExpire > 0 {
 			return superadmin
 		}
