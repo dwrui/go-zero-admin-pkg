@@ -43,9 +43,6 @@ func Model(scope, suffix string) string {
 
 // IsAccountDisabled 账号是否禁用。
 func IsAccountDisabled(scope string, status int64) bool {
-	if scope == Superadmin {
-		return status == 1
-	}
 	return status != 1
 }
 
