@@ -3,6 +3,7 @@ package logsanitize
 import (
 	"encoding/json"
 	"strings"
+	"unicode/utf8"
 )
 
 var sensitiveKeys = map[string]struct{}{
@@ -39,16 +40,17 @@ type Options struct {
 	SkipBody     bool
 }
 
-// SanitizeJSONString 对 JSON 字符串中的敏感字段打码；非 JSON 则原样截断。
+// SanitizeJSONString 对 JSON 字符串中的敏感字段打码；JSON 超限时直接记录空对象 "{}"，不记录数据。
 func SanitizeJSONString(raw string, maxBytes int) string {
 	if raw == "" {
 		return ""
 	}
-	if maxBytes > 0 && len(raw) > maxBytes {
-		raw = raw[:maxBytes] + "...(truncated)"
-	}
 	trimmed := strings.TrimSpace(raw)
 	if trimmed == "" || (trimmed[0] != '{' && trimmed[0] != '[') {
+		// 非 JSON：纯文本截断（调用方本就不会 JSON.parse）
+		if maxBytes > 0 && len(raw) > maxBytes {
+			return cutUTF8(raw, maxBytes) + "...(truncated)"
+		}
 		return raw
 	}
 	var v any
@@ -60,7 +62,23 @@ func SanitizeJSONString(raw string, maxBytes int) string {
 	if err != nil {
 		return raw
 	}
+	if maxBytes > 0 && len(out) > maxBytes {
+		return "{}"
+	}
 	return string(out)
+}
+
+// cutUTF8 按 rune 边界截断，避免切在多字节字符中间产生乱码
+func cutUTF8(s string, maxBytes int) string {
+	if maxBytes <= 0 || len(s) <= maxBytes {
+		return s
+	}
+	cut := s[:maxBytes]
+	// 回退到完整 rune 边界
+	for len(cut) > 0 && !utf8.ValidString(cut) {
+		cut = cut[:len(cut)-1]
+	}
+	return cut
 }
 
 // SanitizeHeadersJSON 脱敏 HTTP Header JSON。
@@ -86,7 +104,7 @@ func SanitizeHeadersJSON(raw string, maxBytes int) string {
 	}
 	s := string(b)
 	if maxBytes > 0 && len(s) > maxBytes {
-		return s[:maxBytes] + "...(truncated)"
+		return "{}"
 	}
 	return s
 }

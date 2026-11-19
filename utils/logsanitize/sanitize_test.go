@@ -16,14 +16,11 @@ func TestSanitizeJSONString_masksPassword(t *testing.T) {
 	}
 }
 
-func TestSanitizeJSONString_truncates(t *testing.T) {
-	raw := `{"data":"` + string(make([]byte, 100)) + `"}`
+func TestSanitizeJSONString_oversizeReturnsEmptyObject(t *testing.T) {
+	raw := `{"data":"` + strings.Repeat("a", 100) + `"}`
 	out := SanitizeJSONString(raw, 20)
-	if len(out) <= 20 {
-		return
-	}
-	if !strings.Contains(out, "truncated") {
-		t.Fatalf("expected truncated marker: %s", out)
+	if out != "{}" {
+		t.Fatalf("expected empty object for oversize json, got: %s", out)
 	}
 }
 
